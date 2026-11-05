@@ -46,7 +46,12 @@ as preexisting:
   5–6 November, before the sprint opened and before any code existed.
   They are design documents, not code.
 
-Everything in `src/` and `analysis/` is written during the sprint.
+The offline runner, fixture tests and replay tooling on this branch began on
+**5 November 2026 (Europe/London), before the sprint**. They are declared
+preexisting preparation. Synthetic fixture output is not study data. The
+preregistration's earlier statement that all `src/` code would be written during
+the sprint needs reconciliation with this dated declaration before submission.
+The builders must preserve this provenance when integrating subsequent work.
 
 ## Layout
 
@@ -54,8 +59,11 @@ Everything in `src/` and `analysis/` is written during the sprint.
 |---|---|
 | `PREREGISTRATION.md` | question, hypotheses, design, endpoints, exclusions, resolution limit, what a null looks like, what this cannot establish |
 | `trace_schema.md` | the per-step and per-run record format |
-| `src/` | chain, agents, verifiers, runner |
-| `analysis/` | propagation, detection, survival curves |
+| `src/swarm_handoff/` | offline runner, synthetic callbacks and fixture replay |
+| `tests/` | data isolation, failure accounting and artifact validation |
+| `scripts/offline_check.py` | one command to test, generate fixtures and replay their counts |
+| `docs/offline-runner.md` | usage, provisional interface and remaining execution gates |
+| `analysis/` | planned empirical analysis, not implemented by this offline package |
 
 ## The three things that decide the build
 
@@ -75,4 +83,17 @@ Everything in `src/` and `analysis/` is written during the sprint.
 
 ## Status
 
-Pre-registration and trace schema fixed before any run exists. All amendments are logged in §13 and dated before the sprint opened.
+The preregistration and its amendment history precede empirical collection.
+This branch aligns the trace schema with Amendment 4 and supplies an offline
+implementation. Verifier evidence access, C verdict values, exact matching,
+failure/continuation rules and the live provider configuration remain open.
+No real agent, provider adapter or empirical execution mode is included.
+
+Run the offline checks from the repository root with Python 3.11 or newer:
+
+```sh
+python3 scripts/offline_check.py
+```
+
+See [the runner notes](docs/offline-runner.md) for saved-data replay and the
+distinction between fixture conventions and the study contract.
