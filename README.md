@@ -2,22 +2,34 @@
 
 Agent A's unverified "done" becomes agent B's input, and B cannot
 distinguish a completed task from a claimed one. We build a chain of
-four agents, inject a silent failure at step one, and measure how far
-that false state travels before anything catches it.
+four agents, inject a silent failure at step one — the agent genuinely
+fails, truthfully reports its own false belief, and hands on a wrong
+state — and measure how far that false state travels before anything
+catches it.
 
-Two conditions on the same runs: one monitor at the end of the chain
-versus a verifier at every handoff. Plus runs with no injection, to
-report each condition's false-positive rate rather than only its
-catch rate.
+Design is crossed 2×2: injection (on / off) × verification scheme
+(one monitor at the end of the chain / a verifier at every handoff).
+The two clean cells give each scheme its own false-positive rate,
+measured against the number of checks that scheme actually makes.
 
-Apart Research Swarm Alignment Hackathon, 6-8 November 2026.
+Framed as survival rather than a flat rate: of the runs with an
+injected failure, what fraction is still uncaught after k handoffs.
+
+**Verifiers flag only. They never stop the chain and never repair it.**
+All four steps run in every run, whatever fires.
+
+Apart Research Swarm Alignment Hackathon, 6–8 November 2026.
 
 ## Team
-- Krishan Kumar Verma — measurement, pre-registration, report
-- Ahmed Tariq — runner, trace format, reproducibility
-- Supriya — agents and A2A handoff, verifier hooks
-- Dora Zelenyanszki — propagation analysis
-- (tbc) — related work, second coder
+
+| | |
+|---|---|
+| Krishan Kumar Verma | measurement, pre-registration, report |
+| Ahmed Tariq | runner, trace format, reproducibility |
+| Supriya Kamatagi | agents and A2A handoff, verifier hooks |
+| Dora Zelenyanszki | propagation analysis (empirical) |
+| Soumyajit Karmakar | related work, second coder |
+| Nico Smith | analytical model — predicted survival curve |
 
 ## Prior work
 
@@ -29,12 +41,38 @@ as preexisting:
   independent end-state verifier. 160 instrumented runs, 4 tasks,
   2 models, zero honest failure reports.
 - The 160-run corpus itself, used as background and motivation only.
-  No result in this submission is computed from it.
+  **No result in this submission is computed from it.**
+- `PREREGISTRATION.md` and `trace_schema.md` were written on
+  5–6 November, before the sprint opened and before any code existed.
+  They are design documents, not code.
 
 Everything in `src/` and `analysis/` is written during the sprint.
 
 ## Layout
-- `PREREGISTRATION.md` — hypothesis, endpoints, exclusions, resolution limit
-- `trace_schema.md` — the per-step record format
-- `src/` — chain, agents, verifiers, runner
-- `analysis/` — propagation and detection analysis
+
+| path | what |
+|---|---|
+| `PREREGISTRATION.md` | question, hypotheses, design, endpoints, exclusions, resolution limit, what a null looks like, what this cannot establish |
+| `trace_schema.md` | the per-step and per-run record format |
+| `src/` | chain, agents, verifiers, runner |
+| `analysis/` | propagation, detection, survival curves |
+
+## The three things that decide the build
+
+1. **The handoff carries the record content; no agent re-reads the
+   file after A writes it.** If B opens the file it finds it empty,
+   reports so, and nothing propagates in either scheme. The file is
+   ground truth precisely because the chain stops consulting it.
+   (`PREREGISTRATION.md` §3)
+2. **Propagation is a mechanical test, not a judgement.** Decided by
+   string and numeric match against `held_record` — the record the
+   fetch would have written, held by the runner, shown to no agent.
+   (§5)
+3. **A run in which only the task caught the discrepancy counts as
+   uncaught** for the primary endpoint, and stays in the denominator.
+   The primary measures the verification scheme, not the chain. (§6)
+
+## Status
+
+Pre-registration and trace schema fixed before any run exists, with
+three amendments logged, all dated before the sprint opened.
