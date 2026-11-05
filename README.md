@@ -64,15 +64,15 @@ Everything in `src/` and `analysis/` is written during the sprint.
    reports so, and nothing propagates in either scheme. The file is
    ground truth precisely because the chain stops consulting it.
    (`PREREGISTRATION.md` §3)
-2. **Propagation is a mechanical test, not a judgement.** Decided by
-   string and numeric match against `held_record` — the record the
-   fetch would have written, held by the runner, shown to no agent.
-   (§5)
+2. **Propagation is a canary test, not a judgement.** `held_record` carries
+   a 12-character random reference code in a field the pipeline carries
+   and never transforms; propagation to step *k* is that code appearing
+   in agent *k*'s `asserted` output fields. One string comparison — no
+   inverse transform, no canonicalisation table, no scorer. (§5)
 3. **A run in which only the task caught the discrepancy counts as
    uncaught** for the primary endpoint, and stays in the denominator.
    The primary measures the verification scheme, not the chain. (§6)
 
 ## Status
 
-Pre-registration and trace schema fixed before any run exists, with
-three amendments logged, all dated before the sprint opened.
+Pre-registration and trace schema fixed before any run exists. All amendments are logged in §13 and dated before the sprint opened.
