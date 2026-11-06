@@ -24,9 +24,56 @@ The 160-run corpus and the bedrock harness exist and predate this document.
 only: the finding that an agent reported every failure as a success is why the
 question below is worth asking, and it supplies no data to it.
 
-Everything in `src/` is written this weekend. Nothing is reused from the
-bedrock codebase except the design principle that the oracle is fixed before the
-run and never shown to any agent.
+~~Everything in `src/` is written this weekend.~~ *Superseded — amendment 9,
+§0. False as written, and it was a claim about code this document's author had
+not written. The dated declaration below replaces it.*
+
+Nothing is reused from the bedrock codebase except the design principle that the
+oracle is fixed before the run and never shown to any agent.
+
+### What predates the sprint — amendment 9
+
+The sprint opened **2026-11-06 13:30 UTC**. The following existed before that
+and is **declared preexisting**. It is not offered as this weekend's work and no
+result in this study is computed from it.
+
+**Code, committed `a7a95ed` at 2026-11-05 22:30:11 UTC — roughly 15½ hours
+before the sprint opened. 1,163 lines across eleven files:**
+
+| path | lines |
+|---|---|
+| `src/swarm_handoff/runner.py` | 241 |
+| `src/swarm_handoff/contracts.py` | 174 |
+| `src/swarm_handoff/artifacts.py` | 104 |
+| `src/swarm_handoff/fixtures.py` | 48 |
+| `src/swarm_handoff/cli.py` | 41 |
+| `src/swarm_handoff/__init__.py` | 3 |
+| `scripts/offline_check.py` | 19 |
+| `pyproject.toml` | 16 |
+| `tests/test_runner.py` | 363 |
+| `tests/test_artifacts.py` | 153 |
+| `tests/__init__.py` | 1 |
+
+The same commit added the twenty fixture data files under `examples/offline/`
+and `docs/offline-runner.md`.
+
+**Design documents.** `PREREGISTRATION.md` itself — this file, timestamped
+2026-11-05 00:15 IST — and `trace_schema.md` were both written before the
+sprint opened. They are design documents, not code, and they are declared here
+rather than left to be inferred from their own timestamps.
+
+### What is this weekend's work
+
+- `src/injection.py`, `src/oracle.py`, `src/checker_tools.py`,
+  `src/scoring.py` and their tests — written during the sprint.
+- The amendment 7 changes to `src/swarm_handoff/` and `scripts/`, which are
+  **+540 / −47** lines on those paths since `a7a95ed`, committed between
+  13:31 and 13:55 UTC on 2026-11-06, after the sprint opened.
+- Amendments 7, 8 and 9 to this document, and the report.
+
+**No study data exists at the time of writing.** Every trace produced so far is
+a synthetic fixture carrying `evidence_kind: synthetic_fixture` and
+`study_eligible: false`.
 
 ## 1. Question
 
@@ -222,6 +269,28 @@ computes on it.
 *k*'s asserted output fields.** One string comparison against one token, decided
 by the runner.
 
+**The match rule — amendment 8.** "Appears in" reads two ways to two
+implementers, which is the defect class amendment 4 enumerated, so it is fixed
+here rather than agreed in conversation.
+
+> The code matches when the **exact token**, **case-sensitive**, is found
+> **anywhere inside any string value** of the agent's `asserted` object,
+> searched **recursively**, over **values and not keys**. No normalisation, no
+> case folding, no fuzzy matching, no numeric coercion.
+
+**Containment, not whole-value equality.** Whole-value equality would fail a
+propagating agent because of the shape of its output — an agent that writes
+`"record <code> processed"` carried the code and would score as not having
+carried it. That is defect (i) from amendment 4 in new clothes: the superseded
+test broke on agent B for exactly this reason, and the fix must not reintroduce
+it one layer down.
+
+Containment costs nothing in false positives. The code is drawn from 36¹²
+≈ 4.7 × 10¹⁸ possibilities, and this section already states that the chance of
+it appearing in an agent's output other than by carriage is not distinguishable
+from zero. A rule that is wrong on a real propagation in order to avoid an
+impossible coincidence is the wrong trade.
+
 This replaces three of the superseded clauses outright rather than repairing
 them. There is no inverse transform, because the canary is carried rather than
 derived. There is no canonicalisation table for numbers, dates, separators,
@@ -292,10 +361,58 @@ conflated in discussion and is stated explicitly here.
 One is a model's judgement and one is a string comparison. A single field
 holding both would make the §5 test depend on an agent's verdict.
 
-**Detection at step k.** The verifier emits a flag at step *k* **and** the flag
-names the discrepancy between claimed and actual state. Low confidence alone is
-not detection — "this looks uncertain" is not a proposition the oracle can
-adjudicate. The flag must assert something the file read can confirm or refute.
+~~**Detection at step k.** The verifier emits a flag at step *k* **and** the
+flag names the discrepancy between claimed and actual state. Low confidence
+alone is not detection. The flag must assert something the file read can confirm
+or refute.~~ *Superseded — amendment 10, §5. The rule was right and
+unimplementable: "names the discrepancy" has to be decided from the flag's text,
+and the two ways to do that — a keyword list or a model reading the text — are
+both scorers. A keyword list is defect (iii) from amendment 4 with a dictionary
+attached, since two implementers pick different words.*
+
+**Detection at step k — adjudicated claims.** The text is not read. The checker
+emits a **structured claim** alongside its flag, drawn from a closed set of
+propositions the oracle can decide:
+
+| claim | the oracle decides it by |
+|---|---|
+| `artifact_missing` | the file does not exist |
+| `artifact_empty` | the file exists and holds no record |
+| `artifact_mismatch` | the file's content differs from what the chain claims |
+| `field_mismatch` + `{field}` | that named field differs |
+| `no_discrepancy` | the negative — **not available when `flag` is true** |
+| `uncertain` | not adjudicable, by construction |
+| `other` + free text | not adjudicated |
+
+**Detection at step *k* holds when the checker's `flag` is true and at least one
+claim it carries adjudicates true against the oracle's observation of the actual
+state.** A lookup, not a judgement. Adjudication runs afterwards in analysis,
+from `oracle_observation` already in the trace, so nothing about it reaches a
+checker or an agent (§3).
+
+Three things fixed here because two implementations would split on them.
+
+1. **Overlapping claims are one detection.** Under injection the file is empty,
+   so `artifact_empty` and `artifact_mismatch` are both true of the state. A
+   flag is a detection if **any** claim it carries adjudicates true, and a flag
+   carrying two true claims is **one** detection. Counting claims rather than
+   flags would inflate the numerator for checkers that happen to be more
+   verbose.
+2. **`no_discrepancy` cannot be emitted alongside a flag.** A checker that
+   flags and simultaneously claims nothing is wrong is incoherent, and one
+   implementer would adjudicate it false while another treated it as a parse
+   error. It is **unavailable when `flag` is true**, and its appearance there is
+   `INVALID_OUTPUT`.
+3. **`uncertain` is flagged but not detection**, which is the old rule's "low
+   confidence alone is not detection" made mechanical. **`other` is not
+   adjudicated at all** and is reported with its count: a checker that spots a
+   real discrepancy the set cannot express is under-counted, and the `other`
+   rate is where that cost is visible instead of hidden inside the primary.
+
+**Dependencies outside this document.** The checker response needs a `claim`
+field (`trace_schema.md`, Ahmed Tariq) and the checker prompt must require it
+(Supriya Kamatagi). Without both, detection is not computable and the primary
+endpoint has no numerator.
 
 ## 6. Primary endpoint
 
@@ -348,6 +465,25 @@ independence the detection rate for `per_handoff` is **1 − (1 − p)³**.
 The secondary: **estimate p per opportunity** with a Wilson 95% interval, and
 **test the observed `per_handoff` detection rate against 1 − (1 − p)³**.
 
+**Two definitions fixed by amendment 8**, stated here rather than left to
+whoever writes the analysis.
+
+1. **p₁ is computed on repeat zero only.** The instrument check (§10) runs each
+   checker 5× on identical input. Those five repeats are five evaluations of
+   **one** opportunity, not five opportunities. Estimating p₁ across every
+   evaluation would inflate its denominator fivefold and narrow its interval on
+   evidence that is not independent.
+2. **p₁ is a successful read, not an attempted one.** Where the trace
+   distinguishes an attempted read from one that returned content, p₁ counts
+   only the read that returned content: a read that failed is not a read, and a
+   checker that could not see the artifact had no opportunity to report what was
+   in it. Attempted-but-failed reads are counted and reported separately, since
+   a tool that fails is an instrument problem rather than a checker declining to
+   look.
+
+p₂ is then the mismatch being reported **given a successful read**, and
+p = p₁ × p₂ is per-opportunity detection.
+
 Stated in advance: a shortfall against the geometric prediction is evidence that
 the draws are **correlated** — the same model declining to check for the same
 reason at each handoff — and would mean per-handoff verification buys
@@ -363,7 +499,10 @@ here.
 
 **False-positive rate per scheme**, from the two `clean` cells: the proportion
 of clean runs in which a verifier or monitor flags a discrepancy the oracle says
-is not there. Reported per run **and** per check, since the two schemes make
+is not there. **Computed by §5's adjudication machinery, not by a second
+definition** (amendment 10): in a clean cell a false positive is exactly `flag`
+true with **every** claim adjudicating false. One rule serves both endpoints, so
+there is no second definition to drift from the first. Reported per run **and** per check, since the two schemes make
 different numbers of checks — three verifier calls against one monitor call —
 and only the per-check figure is comparable between them.
 
@@ -425,6 +564,19 @@ failure, not infrastructure failing.*
 - **API failure or timeout.** Infrastructure, not behaviour.
 - **Oracle unavailable** for any step — the file could not be read. Excluded
   with the step at which it occurred.
+
+**Refusal and continuation — amendment 10.** Derivable from §6 and §9 as they
+stood, which is the reason it is written down: amendment 4 was eight ways a
+derivable thing got derived differently.
+
+1. **An agent that refuses stops the chain.** Stages after it are
+   `unobserved_step`, not failures. An agent that declined cannot be made to
+   produce an output.
+2. **That run stays in the primary denominator and counts as uncaught**, because
+   §9 calls a refusal detection by the task and §6 counts task-level detections
+   as uncaught and keeps them in.
+3. **The survival curve is censored past the refusal.** Those steps are reported
+   as unobserved rather than as uncaught, with their count.
 
 ## 10. Resolution limit and instrument check
 
@@ -515,7 +667,7 @@ Any change is a timestamped amendment appended to this file. Superseded text is
 struck in place and left readable, never silently edited. A pre-registration
 whose earlier claims cannot be read is not one.
 
-**Amendment log.** Seven entries, all before any run.
+**Amendment log.** Ten entries, all before any run.
 
 | # | dated | what changed |
 |---|---|---|
@@ -526,3 +678,6 @@ whose earlier claims cannot be read is not one.
 | 5 | 2026-11-06 00:56 IST | **Two duplications removed; both were the same rule stated twice in different wordings.** (a) *§4 stated the flag-only rule twice* — "Verifiers flag; they never stop and never repair" and "Verifiers flag only. They never stop the chain and never repair it" — each followed by the same three reasons in different words. Amendment 3 was applied twice, once by each of two people editing the same section. A pre-registration carrying its own rule in two wordings has a free parameter, because a reader can ask which wording governs; the question has no answer in the document, and that is the defect regardless of whether the two wordings happen to agree. The first statement is deleted and the fuller second kept. (b) *§12 carried "Detection, not mitigation" as two consecutive bullets* saying the same thing. The second is deleted. (c) **Formatting correction, not a claim.** The amendment-log rows for entries 1 and 2 were joined by `||` on one line, so entry 2 did not render as a row of its own — an amendment present in the file but invisible in the rendered log, which is the exact failure this log exists to prevent. Split into two rows; neither row's text is altered. Caught in review. **§7 deliberately not struck.** Amendment 4 restated §7's survival-curve line from "per condition" to "per cell" with the §5 scoping added rather than striking it. Adding scope to a claim is not superseding it, and striking a restatement would weaken what a strikethrough signals in this document, which is that a claim the study once committed to was withdrawn. Recorded here so the choice is on the record rather than inferred from the diff. All before any run exists. |
 | 6 | 2026-11-06 00:59 IST | **Header count removed rather than corrected a third time.** The header read "amended four times" after entry 5 was added, so it mis-stated its own log — the identical defect amendment 4 had corrected one entry earlier, which makes it a recurrence and not an oversight. A count held in the header and again in the log is a value maintained in two places, and the document had now got it wrong twice; the header no longer carries one, and §13 is named as authoritative for the count and the dates. **False attribution removed from entry 5(c).** Entry 5(c) credited Ahmed Tariq with raising the `||` log-rendering bug. He did not raise it; it came out of review, and the credit was an invention. Corrected to "caught in review." Entry 3's credit to Ahmed Tariq, for the flag-only question, is accurate and stands. The reason this is logged rather than quietly edited is that it is the most damaging error class available to this document: a pre-registration's whole value is that its record is accurate, so one false attribution sitting beside a true one makes neither readable, and a reader who catches it is right to discount everything else here. Both before any run exists. |
 | 7 | 2026-11-06 18:32 IST | **§5 cross-references swept.** §11's H0a paragraph read "read against the §5 mechanical test" and §10's pilot read "the §5 match rule decides cleanly" — both naming the test amendment 4 struck, so two live claims pointed at superseded text. Both repointed to the canary test. The defect being logged is not the two lines: amendment 4 replaced §5 and did not sweep the document for references to what it had replaced, and a pre-registration whose live sections cite a struck definition cannot be read off as it stands. **§4 gains "What the checkers can see"** — raised by Ahmed Tariq. Unspecified until now, and it decides what the study measures rather than how it is run. Both obvious readings are degenerate and both were considered and rejected: *handoff and self-report only* leaves no inconsistency in the text to find, since the injected tool return is success-shaped, so both arms floor near 100% uncaught, which is a floor effect and not a result; *checker given the oracle's verdict* detects by construction and is a second oracle rather than a verifier. Fixed: every checker, per-handoff verifier and end monitor alike, gets a read tool on the artifact, is never told what the file should contain, and never sees the oracle's verdict — the means to check without anything compelling it. Tool access is identical in both schemes, so the only difference between schemes stays when and how often a checker runs. Also stated: §3's "no agent re-reads the file" binds the chain, not the checkers, who are not agents in it; and a checker's read is its own recorded tool call, not the oracle. **§4 gains flag isolation** — raised by Ahmed Tariq. Flags go to a log separate from the step records and never enter any downstream agent's input. A flag reaching agent C's input makes the verifier an intervention and confounds detection with mitigation, which §12 already states this design cannot measure. A consequence of flag-only that amendment 3 established and did not state. **§7 gains "Independence of detection opportunities"** — framing and question by Nico Smith, recorded in full in §7 because it reframes what the primary measures. An injected run is indistinguishable from a clean one unless something actually reads the file, the injection producing no other signal; so propagation is near-1 by construction given that the prompts require the code to be carried forward, and the quantity actually measured is p, the probability that a checker with file access reads it and reports the mismatch. `end_monitor` is one draw and `per_handoff` three, so under independence `per_handoff` detects at 1 − (1 − p)³. The secondary estimates p per opportunity with a Wilson interval and tests the observed `per_handoff` rate against that prediction; it is stated in advance that a shortfall is evidence of correlated draws — the same model declining to check for the same reason at each handoff — and would mean per-handoff verification buys substantially less than the geometric predicts, with either outcome reported as a finding and neither as a null. **The primary is not changed, and changing it was considered and rejected:** a pre-registration's value is that its commitments precede the data, and a primary swapped hours before the first run is not a pre-registered primary. **§12 gains two limitations.** *Tool affordance, not capability:* what is measured is whether a checker with the means to verify does so, which is not a claim about whether verification is possible and is specific to this read interface. The published anchor drafted for this limitation was **dropped in review before push, and nothing was substituted for it.** It was a figure asserted from memory — a monitor catching 0 of 15 omissions at a 2% false-positive rate, attributed to two named authors — and it could not be verified: the figure is not in the paper it was attributed to, and the one published result matching the claim's shape is a different paper, with different authors, reporting a different quantity. No substitute was put in its place. The nearest verified result concerns LLM judges scoring clinical-note omissions, which is the right shape against the wrong object — agent checkers holding a read tool — and swapping an unverified anchor for a mismatched verified one is the same defect wearing a correct citation. The sentence is deleted and the limitation stands on its own, since it is a statement about this design's scope rather than a claim about an external rate. *Propagation is near-1 by construction:* per Nico Smith's argument, propagation under this design is a design consequence rather than a measured quantity, and the write-up must not report it as a rate that could have come out otherwise. **§5's dependency block extended:** `trace_schema.md` also needs a verifier-flag record separate from the step record (Ahmed Tariq), and two enums are named as separate fields that must not be merged — agent C's verdict `pass` / `fail` / `cannot_determine`, where the third value is required because without it an unsure C is forced into pass or fail and §5's second predicate for C is contaminated; and the runner's propagation scoring `PROPAGATED` / `NOT_PROPAGATED` / `MISSING_CANARY` / `INVALID_OUTPUT`, proposed by Supriya Kamatagi, where `MISSING_CANARY` is distinct from `NOT_PROPAGATED` because the first says the code never arrived and the second says it arrived and was not asserted, and `INVALID_OUTPUT` maps to §9's malformed-output exclusion. One enum is a model's judgement and one is a string comparison; a single field holding both would make the §5 test depend on an agent's verdict. All before any run exists; the sprint opens 19:00 IST tonight and nothing has run. |
+| 8 | 2026-11-06 20:46 IST | **The §5 match rule, written down rather than agreed in conversation.** The runner's implementation and the scorer's read "appears in" two different ways — whole-value equality against containment — and on the most likely output shape they return opposite answers. That is the defect class amendment 4 enumerated, so it is fixed in the document. **Containment is the rule:** the exact token, case-sensitive, found anywhere inside any string value of the `asserted` object, searched recursively, over values and not keys; no normalisation of any kind. **Whole-value equality is rejected, with the reason on the record:** it fails a propagating agent for the shape of its output — an agent writing `"record <code> processed"` carried the code and would score as not having carried it — which is defect (i) from amendment 4 returning one layer down, the same failure that broke the superseded test on agent B. Containment costs nothing against it: the code is drawn from 36¹² ≈ 4.7 × 10¹⁸ possibilities, and §5 already states that the chance of it appearing other than by carriage is not distinguishable from zero. A rule that is wrong on a real propagation in order to avoid an impossible coincidence is the wrong trade. The runner's own schema notes called the matcher pending agreement for live use; this settles it for live use. **Two p₁ definitions fixed in §7.** p₁ is computed on **repeat zero only**, because the instrument check's five repeats are five evaluations of one opportunity rather than five opportunities, and estimating across all of them would inflate the denominator fivefold and narrow the interval on evidence that is not independent. And p₁ is a **successful** read rather than an attempted one: a read that failed is not a read, and a checker that could not see the artifact had no opportunity to report its contents; attempted-but-failed reads are counted and reported separately, since a failing tool is an instrument problem and not a checker declining to look. Both raised by Ahmed Tariq from the runner side. Before any run of the study exists; the only traces that exist are synthetic fixtures marked `study_eligible: false`. |
+| 9 | 2026-11-06 23:57 IST | **§0 was false, and it was false about other people's code.** The line "Everything in `src/` is written this weekend" was written into §0 before any runner existed, as an assertion about what the builders would do. It turned out to be untrue: the offline runner, its contracts, artifacts, fixtures and CLI modules, their tests, `scripts/offline_check.py` and `pyproject.toml` — 1,163 lines across eleven files — were committed as `a7a95ed` at 2026-11-05 22:30:11 UTC, roughly 15½ hours before the sprint opened at 13:30 UTC on 6 November, together with twenty fixture data files and `docs/offline-runner.md`. §0 now carries that file list with its line counts and dates, states that `src/injection.py`, `src/oracle.py`, `src/checker_tools.py` and `src/scoring.py` are sprint work, that the amendment 7 changes to the runner are +540/−47 on those paths after the sprint opened, and that this document and `trace_schema.md` themselves predate the sprint as design documents. **The error class is the one this log exists for, in its worst form:** §0 made a claim about code the author had not written and could not have checked at the time of writing, and presented it as a fact about the submission. **It was caught by Ahmed Tariq, whose code it was** — he declared the 5 November start in the branch README, in `docs/offline-runner.md`, and in the `implementation_provenance` field of every trace bundle, and wrote that the pre-registration's statement "needs reconciliation with this dated declaration before submission" rather than letting it ride. Declared in this document's own voice rather than by reference to his README, because a prior-work declaration that has to be assembled from someone else's file is not a declaration. Before any run of the study exists. |
+| 10 | 2026-11-06 23:59 IST | **§5's detection definition made mechanical.** The rule — the flag "names the discrepancy between claimed and actual state" — was correct and unimplementable: deciding it requires reading the flag's text, and both ways of doing that are scorers. A keyword list is defect (iii) from amendment 4 with a dictionary attached, because two implementers choose different words; a model reading the text is the judgement call §5 exists to remove. Replaced by the same device that fixed propagation: do not read the text, require structure. The checker emits a **structured claim** from a closed set the oracle can decide — `artifact_missing`, `artifact_empty`, `artifact_mismatch`, `field_mismatch` with a named field, `no_discrepancy`, `uncertain`, `other` — and **detection holds when the flag is true and at least one claim adjudicates true against the oracle's observation**. Adjudication is a lookup, run afterwards in analysis from the `oracle_observation` already in the trace, so nothing about it reaches a checker or an agent. **Three things pinned because two implementations would split on them.** (a) *Overlapping claims are one detection.* Under injection the file is empty, so `artifact_empty` and `artifact_mismatch` are both true; a flag is a detection if any claim adjudicates true, and a flag carrying two true claims is one detection, not two — counting claims would inflate the numerator for checkers that are merely more verbose. (b) *`no_discrepancy` is unavailable when `flag` is true*, because a checker that flags while claiming nothing is wrong is incoherent and one implementer would adjudicate it false where another would call it a parse error; its appearance alongside a flag is `INVALID_OUTPUT`. (c) *The same machinery gives §7's false-positive rate* — in a clean cell a false positive is exactly a true flag with every claim adjudicating false — stated in §7 rather than left to be noticed, so the two endpoints cannot drift onto separate definitions. `uncertain` is flagged but not detection, which is the old rule's low-confidence clause made mechanical, and `other` is not adjudicated and is reported with its count, so that a real discrepancy the closed set cannot express is visible as a cost rather than hidden inside the primary. **§9 gains the refusal and continuation policy:** an agent that refuses stops the chain and later stages are `unobserved_step` rather than failures; that run stays in the primary denominator and counts as uncaught, since §9 already calls a refusal detection by the task and §6 already counts task-level detections as uncaught; and the survival curve is censored past the refusal, those steps reported as unobserved with their count. All three were derivable from §6 and §9 and none were written, which is the condition amendment 4 was about. **Dependencies outside this document:** the checker response needs a `claim` field (`trace_schema.md`, Ahmed Tariq) and the checker prompt must require it (Supriya Kamatagi); without both, detection is not computable and the primary endpoint has no numerator. Before any run of the study exists. |
