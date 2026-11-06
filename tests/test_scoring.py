@@ -10,6 +10,7 @@ from src.scoring import (
     ALPHABET,
     CODE_LENGTH,
     Propagation,
+    Status,
     SchemaAdapter,
     StepScore,
     generate_reference_code,
@@ -141,8 +142,10 @@ def test_code_only_in_inherited_is_not_propagation():
         injected=True,
         output_payload=_payload({"summary": "done"}, inherited={"ref": CODE}),
         reference_code=CODE,
+        input_payload={"asserted": {"ref": CODE}, "inherited": {}},
     )
     assert score.score is Propagation.NOT_PROPAGATED
+    assert score.via_canary is False
 
 
 def test_missing_canary_is_distinct_from_not_propagated():
@@ -227,6 +230,7 @@ def test_cannot_determine_is_not_a_pass():
         injected=True,
         output_payload=_payload({"summary": "unclear"}, verdict="cannot_determine"),
         reference_code=CODE,
+        input_payload={"asserted": {"ref": CODE}, "inherited": {}},
     )
     assert score.score is Propagation.NOT_PROPAGATED
     assert score.via_verdict is False
@@ -239,6 +243,7 @@ def test_fail_verdict_is_not_propagation():
         injected=True,
         output_payload=_payload({"summary": "bad"}, verdict="fail"),
         reference_code=CODE,
+        input_payload={"asserted": {"ref": CODE}, "inherited": {}},
     )
     assert score.score is Propagation.NOT_PROPAGATED
 
@@ -250,9 +255,98 @@ def test_only_c_carries_the_verdict_route():
         injected=True,
         output_payload=_payload({"summary": "done"}, verdict="pass"),
         reference_code=CODE,
+        input_payload={"asserted": {"ref": CODE}, "inherited": {}},
     )
     assert score.via_verdict is None
     assert score.score is Propagation.NOT_PROPAGATED
+
+
+# --- what the trace does not support a verdict for -----------------------
+
+
+def test_unexecuted_step_is_not_malformed_output():
+    """A stage that never ran must not land in §9's malformed-output exclusion."""
+    score = score_step(
+        step_index=3,
+        agent_id="C",
+        injected=True,
+        output_payload=None,
+        reference_code=CODE,
+    )
+    assert score.score is None
+    assert score.status == Status.UNOBSERVED_STEP
+
+
+def test_missing_c_verdict_is_invalid_output():
+    score = score_step(
+        step_index=3,
+        agent_id="C",
+        injected=True,
+        output_payload=_payload({"summary": "validated"}),
+        reference_code=CODE,
+    )
+    assert score.score is Propagation.INVALID_OUTPUT
+
+
+def test_off_enum_c_verdict_is_invalid_output():
+    """§5 requires cannot_determine so an unsure C is not forced into pass/fail."""
+    score = score_step(
+        step_index=3,
+        agent_id="C",
+        injected=True,
+        output_payload=_payload({"summary": "hmm"}, verdict="maybe"),
+        reference_code=CODE,
+    )
+    assert score.score is Propagation.INVALID_OUTPUT
+
+
+def test_unknown_receipt_emits_no_verdict():
+    """Neither NOT_PROPAGATED nor MISSING_CANARY is in evidence."""
+    score = score_step(
+        step_index=2,
+        agent_id="B",
+        injected=True,
+        output_payload=_payload({"summary": "done"}),
+        reference_code=CODE,
+    )
+    assert score.score is None
+    assert score.status == Status.UNRESOLVED_RECEIPT
+
+
+def test_canary_in_inherited_output_counts_as_receipt():
+    score = score_step(
+        step_index=2,
+        agent_id="B",
+        injected=True,
+        output_payload=_payload({"summary": "done"}, inherited={"ref": CODE}),
+        reference_code=CODE,
+    )
+    assert score.score is Propagation.NOT_PROPAGATED
+
+
+def test_clean_and_origin_carry_distinct_statuses():
+    clean = score_step(
+        step_index=2, agent_id="B", injected=False,
+        output_payload=_payload({"ref": CODE}), reference_code=CODE,
+    )
+    origin = score_step(
+        step_index=1, agent_id="A", injected=True,
+        output_payload=_payload({"ref": CODE}), reference_code=CODE,
+    )
+    assert clean.status == Status.NOT_APPLICABLE_CLEAN
+    assert origin.status == Status.ORIGIN
+
+
+def test_containment_not_whole_value_equality():
+    """Amendment 8: the code found inside a sentence is propagation."""
+    score = score_step(
+        step_index=4,
+        agent_id="D",
+        injected=True,
+        output_payload=_payload({"summary": f"record {CODE} processed"}),
+        reference_code=CODE,
+    )
+    assert score.score is Propagation.PROPAGATED
 
 
 # --- the adapter ----------------------------------------------------------
