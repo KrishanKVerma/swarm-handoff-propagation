@@ -34,7 +34,7 @@ class ArtifactTests(unittest.TestCase):
     def rewrite(self, trace):
         directory = self.root / "fixture"
         (directory / "trace.json").write_bytes(canonical_bytes(trace))
-        for name, rows in (("steps.jsonl", trace["steps"]), ("checks.jsonl", trace["checks"])):
+        for name, rows in (("steps.jsonl", trace["steps"]), ("checks.jsonl", trace["checks"]), ("checker_opportunities.jsonl", trace["checker_opportunities"])):
             (directory / name).write_bytes(b"".join(canonical_bytes(r) + b"\n" for r in rows))
         manifest = json.loads((directory / "manifest.json").read_text())
         for name in manifest["files"]:
@@ -116,7 +116,7 @@ class ArtifactTests(unittest.TestCase):
         audit_bundle(self.root / "fixture")
 
     def test_malformed_check_response_keeps_raw_value(self):
-        trace = self.run_fixture(checker=lambda _: {"flag": "not a bool"})
+        trace = self.run_fixture(checker=lambda _, tools: {"flag": "not a bool"})
         check = trace["checks"][0]
         self.assertEqual(check["status"], "malformed_output")
         self.assertIn("not a bool", check["raw_response"]["text"])
@@ -136,7 +136,7 @@ class ArtifactTests(unittest.TestCase):
         audit_bundle(self.root / "fixture")
 
     def test_unexpected_check_error_preserves_remaining_repeat_schedule(self):
-        def broken(_):
+        def broken(_, tools):
             raise RuntimeError("fixture programming error")
         with self.assertRaises(RuntimeError):
             run_offline(RunConfig("fixture", Condition.INJECT_HANDOFF, 5), self.root,

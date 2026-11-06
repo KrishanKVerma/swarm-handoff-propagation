@@ -18,13 +18,14 @@ def main(argv: list[str] | None = None) -> int:
     make.add_argument("--output", type=Path,
                       default=Path("artifacts") / datetime.now(timezone.utc).strftime("offline-%Y%m%dT%H%M%S%fZ"))
     make.add_argument("--repeats", type=int, choices=range(1, 6), default=1)
+    make.add_argument("--checker-mode", choices=("no_read", "read"), default="no_read")
     replay = commands.add_parser("summarize", help="verify hashes and recompute fixture counts")
     replay.add_argument("--input", required=True, type=Path)
     audit = commands.add_parser("audit", help="validate one saved fixture bundle")
     audit.add_argument("--input", required=True, type=Path)
     args = parser.parse_args(argv)
     if args.command == "demo":
-        demo(args.output, args.repeats)
+        demo(args.output, args.repeats, args.checker_mode)
         result = summarize(args.output)
         result["output"] = str(args.output.resolve())
         (args.output / "fixture-summary.json").write_text(json.dumps(result, indent=2) + "\n")

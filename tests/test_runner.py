@@ -24,7 +24,7 @@ from swarm_handoff.runner import run_offline  # noqa: E402
 
 
 TOKEN = "ABC123DEF456"
-FIXTURE_PASS = "accepted_in_this_test_only"
+FIXTURE_PASS = "pass"
 
 
 def make_agents(observed=None):
@@ -64,7 +64,7 @@ class OfflineRunnerTests(unittest.TestCase):
         return run_offline(
             RunConfig(run_id, condition, verifier_repeats=repeats), self.root,
             self.record, agents if agents is not None else make_agents(),
-            checker if checker is not None else lambda request: CheckResponse(False, "No flag."),
+            checker if checker is not None else lambda request, tools: CheckResponse(False, "No flag."),
             scoring=scoring,
         )
 
@@ -113,7 +113,7 @@ class OfflineRunnerTests(unittest.TestCase):
         quiet = self.execute(agents=make_agents(inputs_without_flags))
         flagged = self.execute(
             agents=make_agents(inputs_with_flags),
-            checker=lambda request: CheckResponse(True, "FLAG_SENTINEL_DO_NOT_FORWARD"),
+            checker=lambda request, tools: CheckResponse(True, "FLAG_SENTINEL_DO_NOT_FORWARD"),
         )
         self.assertEqual(inputs_without_flags, inputs_with_flags)
         self.assertEqual([s["status"] for s in flagged["steps"]], ["completed"] * 4)
@@ -127,14 +127,14 @@ class OfflineRunnerTests(unittest.TestCase):
 
     def test_checker_inputs_exclude_oracle_condition_and_prior_flags(self):
         received = []
-        def checker(request):
+        def checker(request, tools):
             received.append(request.as_json())
             return CheckResponse(True, "PRIVATE_CHECK_RESULT")
         trace = self.execute(checker=checker)
         forbidden = {"condition", "injected", "held_record", "oracle_truth",
                      "oracle_observation", "propagation", "verifier_verdict", "verifier_text"}
         for request in received:
-            self.assertEqual(set(request), {"scheme", "boundary_step", "transcript"})
+            self.assertEqual(set(request), {"scheme", "boundary_step", "transcript", "available_tools"})
             self.assertNotIn("PRIVATE_CHECK_RESULT", json.dumps(request))
             for step in request["transcript"]:
                 self.assertFalse(forbidden.intersection(step))
@@ -142,7 +142,7 @@ class OfflineRunnerTests(unittest.TestCase):
 
     def test_repeats_receive_identical_detached_inputs_and_keep_every_verdict(self):
         received = []
-        def checker(request):
+        def checker(request, tools):
             received.append(request.as_json())
             request.transcript[0]["input_payload"]["task"] = "MUTATED_BY_CHECKER"
             request.transcript[0]["output_payload"]["asserted"].clear()
@@ -223,11 +223,11 @@ class OfflineRunnerTests(unittest.TestCase):
                     self.assert_skipped(step)
 
     def test_checker_timeout_or_malformed_result_is_not_a_false_verdict(self):
-        def timeout(request):
+        def timeout(request, tools):
             raise TimeoutError("fixture checker timeout")
         cases = [(timeout, "timeout"),
-                 (lambda request: CheckResponse(1, "not a bool"), "malformed_output"),
-                 (lambda request: {"flag": False, "text": "untyped"}, "malformed_output")]
+                 (lambda request, tools: CheckResponse(1, "not a bool"), "malformed_output"),
+                 (lambda request, tools: {"flag": False, "text": "untyped"}, "malformed_output")]
         for checker, status in cases:
             with self.subTest(status=status):
                 trace = self.execute(checker=checker)
@@ -254,7 +254,7 @@ class OfflineRunnerTests(unittest.TestCase):
 
     def test_arbitrary_checker_exceptions_propagate_and_are_not_labelled_skipped(self):
         error = RuntimeError("fixture checker programming failure")
-        def broken(request):
+        def broken(request, tools):
             raise error
         with self.assertRaises(RuntimeError) as caught:
             self.execute(checker=broken, run_id="checker-error")
@@ -281,6 +281,25 @@ class OfflineRunnerTests(unittest.TestCase):
                 RunConfig(run_id, Condition.CLEAN_END)
         self.assertEqual(list(self.root.iterdir()), [])
 
+    def test_end_monitor_is_not_invoked_after_final_oracle_failure(self):
+        from swarm_handoff.runner import observe_file
+        count = 0
+
+        def observe(path, record):
+            nonlocal count
+            count += 1
+            if count == 4:
+                raise OSError("synthetic final observation unavailable")
+            return observe_file(path, record)
+
+        with patch("swarm_handoff.runner.observe_file", side_effect=observe):
+            trace = self.execute(Condition.INJECT_END)
+        self.assertEqual(trace["run_status"], "oracle_unavailable")
+        self.assertEqual(trace["agent_invocations"], 4)
+        self.assertEqual(trace["check_invocations"], 0)
+        self.assertEqual(trace["checker_opportunities"][0]["status"], "not_executed")
+        self.assertIsNone(trace["checks"][0]["read_tool_called"])
+
     def test_existing_run_is_never_overwritten(self):
         self.execute(run_id="preserved")
         run_dir = self.root / "preserved"
@@ -294,7 +313,7 @@ class OfflineRunnerTests(unittest.TestCase):
             with self.subTest(token=token), self.assertRaises(ValueError):
                 run_offline(RunConfig("invalid", Condition.INJECT_END), self.root,
                             {"reference_code": token}, make_agents(),
-                            lambda request: CheckResponse(False, "unused"))
+                            lambda request, tools: CheckResponse(False, "unused"))
         self.assertEqual(list(self.root.iterdir()), [])
 
     def test_outputs_are_explicitly_synthetic_and_unresolved_without_scoring_policy(self):
