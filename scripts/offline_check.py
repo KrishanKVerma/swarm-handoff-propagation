@@ -3,17 +3,18 @@
 
 from pathlib import Path
 import sys
-import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT))
 
 if __name__ == "__main__":
-    tests = unittest.defaultTestLoader.discover(str(ROOT / "tests"))
-    if tests.countTestCases() == 0:
-        raise SystemExit("No tests discovered")
-    result = unittest.TextTestRunner(verbosity=2).run(tests)
-    if not result.wasSuccessful():
-        raise SystemExit(1)
+    try:
+        import pytest
+    except ImportError:
+        raise SystemExit("Full repository checks require pytest. Install requirements-dev.txt in a local virtual environment.")
+    result = pytest.main(["-q", str(ROOT / "tests")])
+    if result != 0:
+        raise SystemExit(result)
     from swarm_handoff.cli import main
     raise SystemExit(main(["demo", *sys.argv[1:]]))

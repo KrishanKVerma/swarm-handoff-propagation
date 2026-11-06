@@ -5,16 +5,24 @@ Europe/London**, before the sprint. They remain declared preexisting preparation
 The v0.2 Amendment 7 changes were implemented on **6 November after 13:30
 Europe/London**; new bundles record that cutoff separately from the original
 implementation provenance. Neither date makes synthetic callback output study
-data. The supplied CLI uses Python's standard library and makes no provider
-requests or credit charges.
+data. The runner runtime uses Python's standard library and makes no provider
+requests or credit charges. The full test command also uses pytest for the
+shared experiment helpers from main.
 
 ## Run and replay
 
 From the repository root, with Python 3.11 or newer:
 
 ```sh
-python3 scripts/offline_check.py
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements-dev.txt
+.venv/bin/python scripts/offline_check.py
 ```
+
+The full check command collects both the runner tests and the shared helper
+tests. It fails with an installation hint if pytest is missing. To exercise
+fixtures without any test dependencies, use `PYTHONPATH=src python3 -m
+swarm_handoff.cli demo`.
 
 This runs the tests, creates one synthetic chain per condition, then recomputes
 fixture counts from the saved records. Each invocation uses a new output
@@ -22,7 +30,7 @@ directory. An explicit path is also supported; existing run directories are
 never overwritten:
 
 ```sh
-python3 scripts/offline_check.py --output artifacts/offline-review-001
+.venv/bin/python scripts/offline_check.py --output artifacts/offline-review-001
 PYTHONPATH=src python3 -m swarm_handoff.cli summarize --input artifacts/offline-review-001
 PYTHONPATH=src python3 -m swarm_handoff.cli audit --input artifacts/offline-review-001/fixture_inject_per_handoff
 ```
@@ -32,7 +40,7 @@ flag without opening the artifact. To exercise actual tool reads and five
 evaluations of each checker opportunity:
 
 ```sh
-python3 scripts/offline_check.py --checker-mode read --repeats 5
+.venv/bin/python scripts/offline_check.py --checker-mode read --repeats 5
 ```
 
 The read fixture compares actual artifact JSON with A's visible asserted record,
@@ -40,6 +48,23 @@ not with the runner's private held record. Its flags remain unadjudicated. This
 demo still has four chains and eight scheduled opportunities (two end-monitor
 and six per-handoff), with forty evaluations. It does not generate the registered
 twenty-run pilot, and repeated evaluations are not independent opportunities.
+
+## Shared helper integration
+
+The branch includes the newer `src/injection.py`, `src/oracle.py`,
+`src/checker_tools.py` and `src/scoring.py` from main and runs their tests too.
+The `swarm_handoff` callbacks remain an offline fixture harness. They do not
+claim to be a live A2A or provider adapter for those modules.
+
+Reconcile the shared interfaces before empirical use. The shared scorer matches
+the reference code as an exact substring of string values; the explicit fixture
+policy matches whole string values. The shared read tool reads a live path,
+while repeated offline evaluations read a privately captured boundary snapshot.
+The shared write helper returns status/path/byte metadata, whereas the fixture
+tool returns `ok`. The adapter must preserve evidence and identical clean/inject
+responses while mapping the agreed wire format. This branch leaves the shared
+helper implementations unchanged and does not silently choose one of these
+policies for the study.
 
 ## Implemented boundary
 

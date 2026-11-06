@@ -63,6 +63,7 @@ The builders must preserve this provenance when integrating subsequent work.
 | `PREREGISTRATION.md` | question, hypotheses, design, endpoints, exclusions, resolution limit, what a null looks like, what this cannot establish |
 | `trace_schema.md` | run, task-step, checker-opportunity and evaluation records |
 | `src/swarm_handoff/` | offline runner, synthetic callbacks and fixture replay |
+| `src/injection.py`, `src/oracle.py`, `src/checker_tools.py`, `src/scoring.py` | shared experiment helpers from main; live adapter reconciliation remains pending |
 | `tests/` | data isolation, failure accounting and artifact validation |
 | `scripts/offline_check.py` | one command to test, generate fixtures and replay their counts |
 | `docs/offline-runner.md` | usage, provisional interface and remaining execution gates |
@@ -103,10 +104,14 @@ adapter or empirical execution mode is included. Summaries provide fixture
 counts and read diagnostics; the proposed read/report decomposition and
 independence comparison remain analysis work, not measured results.
 
-Run the offline checks from the repository root with Python 3.11 or newer:
+The runner runtime uses the standard library. Full repository checks also need
+the pinned pytest development dependencies, including the shared helper tests.
+From the repository root, with Python 3.11 or newer:
 
 ```sh
-python3 scripts/offline_check.py
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements-dev.txt
+.venv/bin/python scripts/offline_check.py
 ```
 
 See [the runner notes](docs/offline-runner.md) for saved-data replay and the

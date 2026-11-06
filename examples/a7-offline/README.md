@@ -9,7 +9,7 @@ The read and no-read demonstrations each complete four fixture chains, one per c
 Recreate and replay the read example from the repository root:
 
 ```sh
-python3 scripts/offline_check.py --output artifacts/a7-review --checker-mode read --repeats 5
+.venv/bin/python scripts/offline_check.py --output artifacts/a7-review --checker-mode read --repeats 5
 PYTHONPATH=src python3 -m swarm_handoff.cli summarize --input artifacts/a7-review
 ```
 
