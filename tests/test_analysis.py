@@ -142,3 +142,28 @@ def test_flip_rate_counts_opportunities_not_evaluations():
 
 def test_single_repeat_groups_are_not_counted():
     assert flip_rate([[True], [False]]).inputs == 0
+
+
+# --- a projection with nothing behind it refuses to answer ---------------
+
+
+def test_projection_refuses_without_measurements():
+    import sys
+    sys.path.insert(0, "scripts")
+    from run_pilot import _project
+
+    out = _project({"end_monitor": [0, 0], "per_handoff": [0]}, 2)
+    assert out["pilot_tokens_estimate"] is None
+    assert out["fits_in_one_day"] is None
+    assert "not an estimate of zero" in out["note"]
+
+
+def test_projection_reports_what_it_measured():
+    import sys
+    sys.path.insert(0, "scripts")
+    from run_pilot import _project
+
+    out = _project({"end_monitor": [1000, 2000], "per_handoff": [4000]}, 2)
+    assert out["end_monitor"]["runs_measured"] == 2
+    assert out["pilot_tokens_estimate"] == 55000
+    assert out["fits_in_one_day"] is True

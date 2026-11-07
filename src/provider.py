@@ -137,6 +137,7 @@ class GeminiProvider:
             headers={
                 "Content-Type": "application/json",
                 "x-goog-api-key": os.environ[API_KEY_ENV],
+                "User-Agent": USER_AGENT,
             },
             method="POST",
         )
@@ -229,6 +230,15 @@ class ScriptedProvider:
 
 GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_KEY_ENV = "GROQ_API_KEY"
+
+USER_AGENT = "swarm-handoff-propagation/0.1 (research sprint; python-urllib)"
+"""Sent on every request.
+
+Without it urllib identifies itself as `Python-urllib/3.x`, which the
+provider's edge blocks outright — HTTP 403, Cloudflare `error code: 1010`,
+before the request ever reaches the API. It looks exactly like a bad key and
+is not one. A plain descriptive agent string is enough; it names this client
+truthfully and impersonates no one."""
 
 
 @dataclass
@@ -349,6 +359,7 @@ class GroqProvider:
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {os.environ[GROQ_KEY_ENV]}",
+                "User-Agent": USER_AGENT,
             },
             method="POST",
         )

@@ -123,20 +123,38 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _project(by_scheme: dict[str, list[int]], repeats: int) -> dict[str, object]:
-    """What ten runs per scheme would cost, from what the smoke runs actually used."""
-    out: dict[str, object] = {}
-    total = 0
+    """What ten runs per scheme would cost, from what the smoke runs actually used.
+
+    A projection with no successful runs behind it refuses to answer. Reporting
+    `fits_in_one_day: true` off zero tokens is the same error as a rate with no
+    denominator, and it points the wrong way — it says go ahead.
+    """
+    out: dict[str, object] = {"repeats_sampled": repeats,
+                              "free_tier_day_budget": 200_000}
+    total = 0.0
+    measured = 0
     for scheme, samples in by_scheme.items():
-        if not samples:
-            out[scheme] = "not sampled"
+        usable = [n for n in samples if n > 0]
+        if not usable:
+            out[scheme] = "not measured — no run reported token usage"
             continue
-        mean = sum(samples) / len(samples)
-        out[scheme] = {"mean_tokens_per_run": round(mean), "ten_runs": round(mean * 10)}
+        measured += len(usable)
+        mean = sum(usable) / len(usable)
+        out[scheme] = {"mean_tokens_per_run": round(mean),
+                       "runs_measured": len(usable),
+                       "ten_runs": round(mean * 10)}
         total += mean * 10
+    if measured == 0:
+        out["pilot_tokens_estimate"] = None
+        out["fits_in_one_day"] = None
+        out["note"] = ("no run reported token usage, so there is nothing to project. "
+                       "This is not an estimate of zero.")
+        return out
+    if any(isinstance(out.get(s), str) for s in ("end_monitor", "per_handoff")):
+        out["note"] = ("one scheme was not measured; the estimate covers only the "
+                       "scheme that was")
     out["pilot_tokens_estimate"] = round(total)
-    out["free_tier_day_budget"] = 200_000
     out["fits_in_one_day"] = total <= 200_000
-    out["repeats_sampled"] = repeats
     return out
 
 
