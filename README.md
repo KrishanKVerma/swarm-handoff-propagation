@@ -22,14 +22,34 @@ Apart Research Swarm Alignment Hackathon, 6–8 November 2026.
 
 ## Team
 
+**On this submission:**
+
 | | |
 |---|---|
-| Krishan Kumar Verma | measurement, pre-registration, report |
-| Ahmed Tariq | runner, trace format, reproducibility |
-| Supriya Kamatagi | agents and A2A handoff, verifier hooks |
-| Dora Zelenyanszki | propagation analysis (empirical) |
-| Soumyajit Karmakar | related work, second coder |
-| Nico Smith | analytical model — predicted survival curve |
+| Krishan Kumar Verma | measurement design, pre-registration and amendments, injection, oracle, canary scorer, checker tools, agent and checker prompts, live runner, analysis, report |
+| Soumyajit Karmakar | related work; LA-hub presentation |
+
+## Contributions from outside the current team
+
+The people below are **not on this submission**. The credits record work they
+contributed before the project split, and the work is theirs whether or not
+they are on the team.
+
+- **Ahmed Tariq** — the trace format and the offline runner, including the
+  Amendment 7 checker-access and flag-isolation implementation, on
+  `feat/offline-runner-traces`, declared preexisting from 5 November where
+  applicable (see Prior work). He also raised the flag-only rule
+  (amendment 3), the checker-evidence question and flag isolation
+  (amendment 7), and both p₁ definitions (amendment 8).
+- **Supriya Kamatagi** — the runner's propagation scoring enum,
+  `PROPAGATED` / `NOT_PROPAGATED` / `MISSING_CANARY` / `INVALID_OUTPUT`
+  (amendment 7).
+- **Nico Smith** — the geometric framing and the independence question in §7
+  (amendment 7).
+- **Dora Zelenyanszki** — the p₁ / p₂ decomposition: splitting per-opportunity
+  detection into a read rate and reporting given a read (§7).
+
+Nobody has been removed as a repository collaborator.
 
 ## Prior work
 
