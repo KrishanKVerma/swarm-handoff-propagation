@@ -141,3 +141,39 @@ def test_envelope_parser_strips_code_fences():
 
 def test_check_parser_requires_a_boolean_flag():
     assert parse_check('{"flag": false, "claim": "no_discrepancy"}')["flag"] is False
+
+
+# --- truncation is an instrument failure, not malformed output -----------
+
+
+class _TruncatingProvider:
+    model = "truncator"
+    name = "truncator"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def metadata(self):
+        return {"provider": self.name, "model": self.model}
+
+    def generate(self, *, system, user):
+        from src.provider import ProviderResponse
+        self.calls += 1
+        return ProviderResponse(text='{"asserted": {"a":', model=self.model,
+                                attempts=1, elapsed_s=0.0, finish_reason="length",
+                                usage={"total_tokens": 42})
+
+
+def test_truncated_reply_is_not_malformed_output(tmp_path):
+    """§9's malformed-output bucket is for the agent, not for our token cap."""
+    config = RunConfig(run_id="t1", mode="inject", scheme="end_monitor", verifier_repeats=1)
+    bundle = run_live(config, tmp_path / "runs", RECORD, _TruncatingProvider())
+    assert bundle["steps"][0]["status"] == "truncated_output"
+    assert bundle["exclusion_reason"] == "instrument_truncation"
+    assert bundle["exclusion_reason"] != "malformed_output"
+
+
+def test_token_usage_is_totalled(tmp_path):
+    config = RunConfig(run_id="t2", mode="inject", scheme="end_monitor", verifier_repeats=1)
+    bundle = run_live(config, tmp_path / "runs", RECORD, _TruncatingProvider())
+    assert bundle["tokens_used"] == 42

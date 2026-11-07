@@ -52,6 +52,10 @@ class MalformedOutput(ValueError):
     """The model's reply was not the envelope the prompt asked for."""
 
 
+class _Truncated(RuntimeError):
+    """The reply was cut off at the token cap. An instrument failure."""
+
+
 @dataclass(frozen=True)
 class RunConfig:
     run_id: str
@@ -171,7 +175,7 @@ def run_live(config: RunConfig, output_root: Path, record: dict[str, Any],
         "artifact_initial_state": "empty_json_object",
         "tool_loop": "scripted_runner_side",
         "excluded": False, "exclusion_reason": None, "run_status": "completed",
-        "agent_invocations": 0, "check_invocations": 0,
+        "agent_invocations": 0, "check_invocations": 0, "tokens_used": 0,
         "steps": [], "checks": [], "checker_opportunities": [],
         "confirmed_detections": None,
     }
@@ -211,7 +215,13 @@ def run_live(config: RunConfig, output_root: Path, record: dict[str, Any],
                     system=CHAIN_PROMPTS[agent_id],
                     user=_user_message(index, payload, tool_results),
                 )
+                bundle["tokens_used"] += reply.total_tokens
                 step["raw_response"] = reply.text
+                if reply.truncated:
+                    # The token cap cut the reply off. That is our instrument
+                    # failing, not the agent returning unparseable output, so
+                    # it must not land in §9's malformed-output category.
+                    raise _Truncated("output truncated at the token cap")
                 step["output_payload"] = parse_envelope(reply.text)
                 step["self_report_claim"] = True
                 step["self_report_text"] = reply.text[:2000]
@@ -221,6 +231,11 @@ def run_live(config: RunConfig, output_root: Path, record: dict[str, Any],
                     "model": reply.model, "usage": reply.usage,
                     "finish_reason": reply.finish_reason,
                 }
+            except _Truncated as exc:
+                step.update(status="truncated_output", error=str(exc))
+                bundle.update(run_status="truncated_output", excluded=True,
+                              exclusion_reason="instrument_truncation")
+                blocked = True
             except MalformedOutput as exc:
                 step.update(status="malformed_output", error=str(exc))
                 bundle.update(run_status="malformed_output", excluded=True,
@@ -233,7 +248,8 @@ def run_live(config: RunConfig, output_root: Path, record: dict[str, Any],
                 _write_run(run_dir, bundle)
                 raise
             except ProviderError as exc:
-                step.update(status="api_failure", error=type(exc).__name__)
+                step.update(status="api_failure", error=str(exc),
+                            error_detail=exc.as_trace())
                 bundle.update(run_status="api_failure", excluded=True,
                               exclusion_reason="api_failure")
                 blocked = True
@@ -357,13 +373,14 @@ def _evaluate(bundle: dict[str, Any], row: dict[str, Any], message: str,
     bundle["check_invocations"] += 1
     try:
         first = provider.generate(system=CHECKER, user=message + TOOL_OFFER)
-    except MalformedOutput as exc:
-        row.update(status="malformed_output", error=str(exc))
-        return
     except ProviderError as exc:
-        row.update(status="api_failure", error=type(exc).__name__)
+        row.update(status="api_failure", error=str(exc), error_detail=exc.as_trace())
         return
+    bundle["tokens_used"] += first.total_tokens
     row["raw_response"] = first.text
+    if first.truncated:
+        row.update(status="truncated_output", error="output truncated at the token cap")
+        return
 
     reply_text = first.text
     if _wants_read(first.text):
@@ -378,7 +395,11 @@ def _evaluate(bundle: dict[str, Any], row: dict[str, Any], message: str,
         try:
             second = provider.generate(system=CHECKER, user=follow_up)
         except ProviderError as exc:
-            row.update(status="api_failure", error=type(exc).__name__)
+            row.update(status="api_failure", error=str(exc), error_detail=exc.as_trace())
+            return
+        bundle["tokens_used"] += second.total_tokens
+        if second.truncated:
+            row.update(status="truncated_output", error="output truncated at the token cap")
             return
         reply_text = second.text
         row["raw_response"] = first.text + "\n---\n" + second.text
