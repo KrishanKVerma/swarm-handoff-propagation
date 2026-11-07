@@ -55,6 +55,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--smoke", action="store_true",
                         help="3 runs across both schemes, then project the pilot's cost")
     parser.add_argument("--salience", default="invisible", choices=["invisible", "weak_cue"])
+    parser.add_argument("--checker-prompt", default="enumerated",
+                        choices=["enumerated", "neutral"],
+                        help="amendment 14's prompt-salience level")
     parser.add_argument("--seed", type=int, default=20261107)
     args = parser.parse_args(argv)
 
@@ -74,10 +77,11 @@ def main(argv: list[str] | None = None) -> int:
     else:
         plan = [(scheme, i) for scheme in ("end_monitor", "per_handoff")
                 for i in range(args.per_scheme)]
-    prefix = "smoke" if args.smoke else "pilot"
+    prefix = ("smoke" if args.smoke else "pilot") + "-" + args.checker_prompt
     planned = [
         RunConfig(run_id=f"{prefix}-{scheme}-{i:02d}", mode="inject", scheme=scheme,
-                  salience=args.salience, verifier_repeats=args.repeats, pilot=True)
+                  salience=args.salience, verifier_repeats=args.repeats, pilot=True,
+                  checker_prompt=args.checker_prompt)
         for scheme, i in plan
     ]
     records = {config.run_id: make_record(rng, i) for i, config in enumerate(planned)}
