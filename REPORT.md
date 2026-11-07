@@ -1,4 +1,6 @@
-# How far does an unverified success claim travel through an agent chain?
+# What makes a boundary gate look?
+
+### Prompt enumeration determines whether an LLM monitor inspects the artifact
 
 Apart Research Swarm Alignment Hackathon · 6–8 November 2026
 
@@ -10,10 +12,11 @@ rewritten in the author's voice before shipping.
 
 ## 0. Front matter
 
-- **Title.** `<<TITLE>>` — candidates; Krishan picks the wording:
-  1. *What makes a boundary gate look? Prompt enumeration determines whether
-     an LLM monitor inspects the artifact*
-  2. *A gate that isn't told what to look for doesn't look*
+- **Title.** *What makes a boundary gate look? Prompt enumeration determines
+  whether an LLM monitor inspects the artifact* — **DRAFT**, set as the header
+  above so the document no longer opens on the withdrawn question.
+  Alternatives: *A gate that isn't told what to look for doesn't look*;
+  *Enumeration elicits inspection*.
 - **Abstract, 150–250 words.** **DRAFT — rewrite in the author's voice.**
 
 > **A verifier that is not told what to look for mostly does not look.**
@@ -37,9 +40,9 @@ rewritten in the author's voice before shipping.
 > reduces detection to one question — does anything read the artifact?
 >
 > The constraint that made our detection metric machine-adjudicable was
-> eliciting the behaviour it measured. Six live runs; no endpoint reached;
-> a pre-registration with sixteen dated amendments, one of which withdraws our
-> own registered primary.
+> eliciting the behaviour it measured. Six live runs, and a pre-registration
+> with sixteen dated amendments, one of which withdraws our own registered
+> primary.
 
 - **Authors and affiliations.** `<<AUTHORS_AFFILIATIONS>>`
 - **Contributions.** Krishan Kumar Verma: measurement design, pre-registration
@@ -90,23 +93,30 @@ endpoint from the registered design was reached.
 
 **DRAFT — rewrite in the author's voice.**
 
-When one agent hands work to another, what crosses the boundary is a claim.
-Agent A reports that it wrote the file; agent B receives that report and has no
-way to distinguish a completed task from a claimed one. Everything downstream
-is built on the claim, and nothing in the chain is obliged to check it against
-the artifact. This is not a failure of honesty — an agent whose write tool
-returns success has no basis for saying anything else — which is why it is a
-measurement problem rather than a deception problem.
+A verifier that never looks is indistinguishable, in every log it produces,
+from one that looked and found nothing. Both emit the same clean result. The
+difference is invisible to the person reading the output and invisible to the
+reviewer who confirms that monitoring exists, and it is not a hypothetical
+distinction: in our neutral condition the checkers did not merely miss the
+failure, they returned an affirmative judgement that nothing was wrong.
 
-The question is worth asking because of a result we are not using here. A
-160-run reliability harness (`github.com/KrishanKVerma/bedrock`) produced an
-agent that reported every failure as a success across 4 tasks and 2 models.
-**That corpus and that harness predate this sprint, are declared as prior work,
-and supply no data to this study**; they are the reason the question is worth
-asking and nothing more. The full prior-work declaration — which files, how
-many lines, which commit and which timestamp — is in `PREREGISTRATION.md` §0,
-including the parts of this repository's runner that predate the sprint by
-roughly fifteen hours and are declared as preexisting preparation.
+The failure class is real outside the laboratory. An audit of ToolUniverse
+found 91 failures across 198 candidate cases, with 7 of 15 tools failing on
+more than half of theirs, and most of them silent at the point of use. A tool
+that returns a success-shaped response for an action that did not happen leaves
+the agent nothing to report but success. That is why this is a measurement
+problem rather than a deception problem: the agent's account of its own belief
+is accurate, and what is false is a claim about the world that nothing in the
+transcript contradicts.
+
+We came to the question from the other side. A 160-run reliability harness
+(`github.com/KrishanKVerma/bedrock`, 4 tasks, 2 models) produced an agent that
+reported every failure as a success. **That corpus and that harness predate
+this sprint, are declared as prior work, and supply no data to this study**;
+they are the reason the question seemed worth asking and nothing more. The full
+prior-work declaration — which files, how many lines, which commit, which
+timestamp, including parts of this repository's runner that predate the sprint
+by roughly fifteen hours — is in `PREREGISTRATION.md` §0.
 
 ## 2. Related Work
 
@@ -312,18 +322,27 @@ Verdict instability appeared as soon as there was any variance to have: **1 of
 2** neutral `end_monitor` opportunities flipped across repeats, while the
 enumerated arm's 0 of 5 is zero variance rather than demonstrated stability.
 
-Read against Singh and Pawar, this suggests their boundary-gate advantage may
-be partly an artefact of what gates are told rather than of where they sit —
-but we cannot test that, because we did not run their comparison and ours had
-no variance to compare. It is a hypothesis their design could settle and ours
-cannot.
-
 The result rests on a single observation — a second neutral detection would
-have made it unresolved by our own pre-registered table — and **nothing here
-licenses a claim about either verification scheme, about the independence of
-detection opportunities, or about the rate at which agents propagate
-unverified claims.** No endpoint was computed, no cell reached its registered
-n, and the registered primary was withdrawn before any of it (amendment 16).
+have made it unresolved by our own pre-registered table — and it licenses no
+claim about either verification scheme, about the independence of detection
+opportunities, or about the rate at which agents propagate unverified claims.
+
+What it does license is narrow and, we think, useful. **A monitor's prompt is
+a parameter of its sensitivity, and an inexpensive one.** The same model, the
+same tool and the same evidence moved from 1 of 5 to 5 of 5 on a change of
+wording, which puts prompt wording in the same class as model choice for anyone
+deploying a monitor, at none of the cost. SLEIGHT-Bench reports the compatible
+result from the other direction: targeted prompts improve monitor performance
+on some blind-spot categories while no single prompt covers all of them.
+
+It also raises a question for the result we built on. If a gate's effectiveness
+depends this much on what it is told, part of Singh and Pawar's boundary-gate
+advantage may be a property of what their gates were told rather than of where
+they sat. **We cannot test that** — we did not run their comparison, and ours
+had no variance left to compare. It is a hypothesis their design could settle
+and ours cannot, and it is the thing we would run next, together with a third
+arm giving the output format and no options at all, which is the clean version
+of the test we ran.
 
 ## 6. Limitations and Dual-Use / Ethical Considerations
 
