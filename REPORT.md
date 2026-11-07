@@ -16,29 +16,43 @@ rewritten in the author's voice before shipping.
   2. *A gate that isn't told what to look for doesn't look*
 - **Abstract, 150–250 words.** **DRAFT — rewrite in the author's voice.**
 
-> Boundary gates beat end-of-pipeline checking in multi-agent pipelines: Singh
-> and Pawar establish this across 346 injected failures, cutting survival from
-> 58.4% to 16.2%. We ask the question their result creates rather than
-> re-litigating it — **why** a boundary gate works, and whether its
-> effectiveness is a property of placement or of prompting.
+> **A verifier that is not told what to look for mostly does not look.**
+> Naming candidate failure modes in an LLM checker's prompt moved detection of
+> a silent failure from **1 of 5 opportunities to 5 of 5** (two-sided Fisher
+> exact p = 0.0476), and the mechanism is reading rather than reporting: the
+> checkers that were not pointed at the artifact mostly never opened it, and
+> concluded nothing was wrong.
 >
-> We build a four-agent chain with a different failure shape. The first agent's
-> write tool returns a success-shaped response and the file stays empty, so the
-> agent's report is truthful about its own belief: the content is right and only
-> the world-state claim is false. Nothing in the text is wrong. Where Singh and
-> Pawar have an error propagating, we have an **absence** propagating, which
-> reduces detection to a single question — does anything read the artifact?
+> This matters because where to put a verifier is settled and why it works is
+> not. Singh and Pawar show boundary gates cut failure survival from 58.4% to
+> 16.2% across 346 injected failures; we take that result and ask what a gate
+> is doing when it works. Placement decides how often a gate runs. Nothing
+> about placement decides whether it looks.
 >
-> It does, but only when told to. Naming candidate failure modes in the
-> checker's prompt moved detection from **1 of 5 opportunities to 5 of 5**
-> (two-sided Fisher exact p = 0.0476), and the mechanism is reading rather than
-> reporting: the checkers that were not pointed at the artifact mostly never
-> opened it, and concluded nothing was wrong. The same constraint that made our
-> detection metric machine-adjudicable was eliciting the behaviour it measured.
-> Six live runs; no endpoint reached; pre-registration with sixteen dated
-> amendments, one of which withdraws our own registered primary.
+> The failure we inject is shaped to isolate that. The first agent's write tool
+> returns a success-shaped response and the file stays empty, so the agent's
+> report is truthful about its own belief: the content is right and only the
+> world-state claim is false. Nothing in the text is wrong. Where Singh and
+> Pawar have an error propagating, we have an absence propagating, which
+> reduces detection to one question — does anything read the artifact?
+>
+> The constraint that made our detection metric machine-adjudicable was
+> eliciting the behaviour it measured. Six live runs; no endpoint reached;
+> a pre-registration with sixteen dated amendments, one of which withdraws our
+> own registered primary.
 
 - **Authors and affiliations.** `<<AUTHORS_AFFILIATIONS>>`
+- **Contributions.** Krishan Kumar Verma: measurement design, pre-registration
+  and amendments, injection, oracle, canary scorer, checker tools, prompts,
+  live runner, analysis, report. Soumyajit Karmakar: related work; LA-hub
+  presentation. From outside the current team, recording work done before the
+  project split: Ahmed Tariq (trace format and offline runner, including the
+  amendment 7 checker-access and flag-isolation implementation, declared
+  preexisting from 5 November where applicable; raised the flag-only rule,
+  the checker-evidence question and flag isolation, and both p₁ definitions),
+  Supriya Kamatagi (the propagation scoring enum), Nico Smith (the geometric
+  framing and the independence question), Dora Zelenyanszki (the p₁ / p₂
+  decomposition).
 - **Prior-work statement.** See §2 and `PREREGISTRATION.md` §0, which carries
   the file list, line counts and commit timestamps.
 
@@ -180,26 +194,18 @@ under injection and `artifact_missing` is false.
 
 ### What was fixed in advance
 
-Fifteen amendments, each timestamped, superseded text struck in place and left
-readable. Entries 1–13 precede any study data. Entry 14 follows the first three
-runs and precedes every run after them. Entry 15 records the head-to-head
-result and closes the comparison.
-
-**Eight of the fifteen correct errors in our own document**, including a
-propagation test two implementations would have scored differently, a rule
-stated twice in two wordings, a false attribution, a prior-work claim about
-code we had not written, and — in entry 15 — a p-value we had computed wrongly
-in entry 14, corrected before it was used.
-
-Fixed before any run and not changed afterwards: the primary endpoint, the n
-and its power table, the exclusion categories, the scoring rule for
-task-level detections, the canary match rule, the adjudication rule, and what
-a null looks like.
-
-**One pre-commitment is load-bearing for §5.** After the head-to-head returned
-p = 0.0476, amendment 15 records that **no further runs will be added to that
-comparison**: extending n after seeing a p-value just under 0.05 is optional
-stopping, and the refusal is in the log rather than only in our intentions.
+Sixteen dated amendments, superseded text struck in place and left readable.
+**Eight correct errors in our own document** — among them a propagation test
+two implementations would have scored differently, a rule stated twice in two
+wordings, a false attribution, a prior-work claim about code we had not
+written, a p-value we computed wrongly and fixed before using, and the
+withdrawal of our own registered primary. Fixed before any run and unchanged
+since: the endpoint specifications, the n and its power table, the exclusion
+categories, the canary match rule, the adjudication rule, and what a null looks
+like. After the head-to-head returned p = 0.0476, amendment 15 records a
+**pre-commitment against adding runs to it**: optional stopping would be
+invisible in the numbers and obvious in the history. Detail in Appendix B and
+in `PREREGISTRATION.md`.
 
 ## 4. Results
 
@@ -229,10 +235,6 @@ with no shortfall to interpret. **5 of 5 does not establish p = 1**; the lower
 bound is 56.6%.
 
 ### 4.2 The enumeration confound
-
-The claim set that amendment 10 introduced to make detection machine-decidable
-lives in the checker's prompt and names artifact-level failures. The instrument
-that made detection adjudicable **also told the checker where to look.**
 
 Registered as a head-to-head before it ran, five opportunities per arm:
 
@@ -325,6 +327,49 @@ n, and the registered primary was withdrawn before any of it (amendment 16).
 
 ## 6. Limitations and Dual-Use / Ethical Considerations
 
+Three govern how every number here should be read. **Propagation is near-1 by
+construction**, because the injection leaves no signal unless something reads
+the file: it is a design consequence, not a measurement. **A low read rate on
+an open-weights model may be capability rather than propensity**, so the claim
+is "the checkers did not read", never "checkers do not bother to verify".
+**The one resolved comparison is about our instrument** — six live runs, no
+endpoint reached, the registered primary withdrawn.
+
+The full list, what this design cannot establish, and the dual-use and ethics
+treatment are in Appendix A, as the submission form requires.
+
+## 7. References
+
+From §2. **Only entries verified against the source appear here**; the
+verification table is `docs/citation-check.md`.
+
+1. Prabhjot Singh and Bhushan Pawar. *The Hallucination Snowball: Modeling
+   Error Propagation as State Transitions in Multi-Agent LLM Pipelines.*
+   arXiv:2608.14588v1, 2026.
+2. Sugam Panthi and Rabab Abdelfattah. *Outcome Monitors: Recovery Affordances
+   for Silent Tool Failures.* arXiv:2608.19303v1, 2026.
+3. Elle Najt, Colin Toft, Tyler Tracy, Fabien Roger and Joe Benton.
+   *SLEIGHT-Bench: A Benchmark of Evasion Attacks Against Agent Monitors.*
+   arXiv:2605.16626, 2026.
+4. Devansh Singh, Shreya Gopalan and Sundaraparipurnan Narayanan. *Silent
+   Failures in Agent–Tool Interaction: An Audit of ToolUniverse.* 2026.
+5. Yue Zhao. *CatchBench: When Can an Agent Failure Be Caught?* Preprint, 2026.
+6. Jurgis Kemeklis and Nikhil Vemuri. *Omission Attacks: When Doing Nothing Is
+   the Attack.* Apart Research AI Control Hackathon, 2026.
+7. Tomek Korbak et al. *Chain of Thought Monitorability: A New and Fragile
+   Opportunity for AI Safety.* arXiv:2507.11473, 2025.
+8. Miles Turpin et al. *Language Models Don't Always Say What They Think.*
+   arXiv:2305.04388, 2023.
+
+`<<REMAINING_REFERENCES>>` — the entries from Soumyajit's text still awaiting
+titles before they can be verified: Huang et al. 2025, Hu 2026, Sun et al.
+2024, Advani 2026, Hiller/Jhumka/Suri 2001, Arcuschin et al. 2025, plus FakeLab
+(arXiv 2607.07368) and SCHEME (arXiv 2605.29178), verified by the author.
+
+## Appendix A — Limitations and Dual-Use / Ethical Considerations
+
+**Required under this name by the submission form.**
+
 ### Limitations
 
 - **Propagation is near-1 by construction.** The injection leaves no signal
@@ -364,70 +409,6 @@ and the space of silent failures is unbounded.
 
 And at this n it establishes nothing about agents at all. The one resolved
 comparison is about **our instrument**.
-
-### Dual use and ethics
-
-Stated in full in the appendix, as the submission form requires. In short: the
-finding is a lever in both directions, we judge the defensive use to dominate
-for reasons given there, and we name the case where that argument weakens.
-
-## 7. References
-
-From §2. **Only entries verified against the source appear here**; the
-verification table is `docs/citation-check.md`.
-
-1. Prabhjot Singh and Bhushan Pawar. *The Hallucination Snowball: Modeling
-   Error Propagation as State Transitions in Multi-Agent LLM Pipelines.*
-   arXiv:2608.14588v1, 2026.
-2. Sugam Panthi and Rabab Abdelfattah. *Outcome Monitors: Recovery Affordances
-   for Silent Tool Failures.* arXiv:2608.19303v1, 2026.
-3. Elle Najt, Colin Toft, Tyler Tracy, Fabien Roger and Joe Benton.
-   *SLEIGHT-Bench: A Benchmark of Evasion Attacks Against Agent Monitors.*
-   arXiv:2605.16626, 2026.
-4. Devansh Singh, Shreya Gopalan and Sundaraparipurnan Narayanan. *Silent
-   Failures in Agent–Tool Interaction: An Audit of ToolUniverse.* 2026.
-5. Yue Zhao. *CatchBench: When Can an Agent Failure Be Caught?* Preprint, 2026.
-6. Jurgis Kemeklis and Nikhil Vemuri. *Omission Attacks: When Doing Nothing Is
-   the Attack.* Apart Research AI Control Hackathon, 2026.
-7. Tomek Korbak et al. *Chain of Thought Monitorability: A New and Fragile
-   Opportunity for AI Safety.* arXiv:2507.11473, 2025.
-8. Miles Turpin et al. *Language Models Don't Always Say What They Think.*
-   arXiv:2305.04388, 2023.
-
-`<<REMAINING_REFERENCES>>` — the entries from Soumyajit's text still awaiting
-titles before they can be verified: Huang et al. 2025, Hu 2026, Sun et al.
-2024, Advani 2026, Hiller/Jhumka/Suri 2001, Arcuschin et al. 2025, plus FakeLab
-(arXiv 2607.07368) and SCHEME (arXiv 2605.29178), verified by the author.
-
-## 8. Team and contributions
-
-**On this submission:**
-
-| | |
-|---|---|
-| Krishan Kumar Verma | measurement design, pre-registration and amendments, injection, oracle, canary scorer, checker tools, prompts, live runner, analysis, report |
-| Soumyajit Karmakar | related work; LA-hub presentation |
-
-**Contributions from outside the current team.** Not on this submission; the
-credits record work contributed before the project split.
-
-- **Ahmed Tariq** — trace format and offline runner, including the amendment 7
-  checker-access and flag-isolation implementation, declared preexisting from
-  5 November where applicable; raised the flag-only rule (amendment 3), the
-  checker-evidence question and flag isolation (amendment 7), and both p₁
-  definitions (amendment 8).
-- **Supriya Kamatagi** — the runner's propagation scoring enum (amendment 7).
-- **Nico Smith** — the geometric framing and the independence question
-  (amendment 7).
-- **Dora Zelenyanszki** — the p₁ / p₂ decomposition.
-
-## Appendix A — Limitations and Dual-Use / Ethical Considerations
-
-**Required under this name by the submission form.**
-
-### Limitations
-
-§7 and §8, in full.
 
 ### Dual use
 
@@ -512,6 +493,29 @@ is addressed in §7 and §8.
   study data.
 - **Tooling.** Implementation was AI-assisted; see the tooling note in §0.
 
+## Appendix B — What was fixed in advance
+
+Fifteen amendments, each timestamped, superseded text struck in place and left
+readable. Entries 1–13 precede any study data. Entry 14 follows the first three
+runs and precedes every run after them. Entry 15 records the head-to-head
+result and closes the comparison.
+
+**Eight of the sixteen correct errors in our own document**, including a
+propagation test two implementations would have scored differently, a rule
+stated twice in two wordings, a false attribution, a prior-work claim about
+code we had not written, and — in entry 15 — a p-value we had computed wrongly
+in entry 14, corrected before it was used.
+
+Fixed before any run and not changed afterwards: the primary endpoint, the n
+and its power table, the exclusion categories, the scoring rule for
+task-level detections, the canary match rule, the adjudication rule, and what
+a null looks like.
+
+**One pre-commitment is load-bearing for §5.** After the head-to-head returned
+p = 0.0476, amendment 15 records that **no further runs will be added to that
+comparison**: extending n after seeing a p-value just under 0.05 is optional
+stopping, and the refusal is in the log rather than only in our intentions.
+
 ---
 
 ## Before submitting
@@ -520,7 +524,7 @@ is addressed in §7 and §8.
       every `DRAFT — rewrite` line removed.
 - [ ] No `<<` remains.
 - [ ] Every rate carries its denominator; no zero without a bound.
-- [ ] Amendment count here matches `PREREGISTRATION.md` §13 (fifteen).
+- [ ] Amendment count here matches `PREREGISTRATION.md` §13 (**sixteen**).
 - [ ] Every name in §9 did the thing written next to it.
 - [ ] Apart's official template, ≤8 pages excluding references and appendices.
 - [ ] Figure 1 present with its caption.
