@@ -337,7 +337,7 @@ class FixturePropagationTests(unittest.TestCase):
         return propagation(step, injected=injected, token=TOKEN, policy=policy)
 
     def test_only_exact_asserted_values_count_under_the_explicit_fixture_policy(self):
-        policy = FixtureScoring(c_pass_value=FIXTURE_PASS)
+        policy = FixtureScoring(c_pass_value=FIXTURE_PASS, canary_rule="exact_string_values")
         cases = [({"record": {"reference_code": TOKEN}}, {}, True),
                  ({"nested": [{"code": TOKEN}]}, {}, True),
                  ({TOKEN: "key only"}, {}, False),

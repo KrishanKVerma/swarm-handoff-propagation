@@ -1,4 +1,4 @@
-"""Validate saved fixture records and recompute fixture counts only."""
+"""Replay saved fixture and live records without calling model providers."""
 
 from __future__ import annotations
 
@@ -58,7 +58,7 @@ def _audit_v1(run_dir: Path) -> dict[str, Any]:
     _require([s["agent_id"] for s in steps] == list("ABCD"), "stage identities mismatch")
     _require(trace["agent_invocations"] == sum(s["call_receipt"] is not None for s in steps),
              "agent invocation count mismatch")
-    policy = FixtureScoring(**trace["scoring_policy"]) if trace["scoring_policy"] is not None else None
+    policy = FixtureScoring.from_recorded(trace["scoring_policy"]) if trace["scoring_policy"] is not None else None
     for index, step in enumerate(steps):
         _require(step["run_id"] == trace["run_id"] and step["condition"] == trace["condition"],
                  "per-step run metadata mismatch")
@@ -246,7 +246,7 @@ def _audit_v2(run_dir: Path) -> dict[str, Any]:
         _require(_same(exported, rows), "JSONL export differs from authoritative trace: " + name)
     _require(_same([s["step_index"] for s in steps], [1, 2, 3, 4]), "four ordered step records required")
     _require([s["agent_id"] for s in steps] == list("ABCD"), "stage identities mismatch")
-    policy = FixtureScoring(**trace["scoring_policy"]) if trace["scoring_policy"] is not None else None
+    policy = FixtureScoring.from_recorded(trace["scoring_policy"]) if trace["scoring_policy"] is not None else None
     for index, step in enumerate(steps):
         _require(not ({"verifier_verdict", "verifier_text", "verifier_status"} & set(step)),
                  "checker flags must be isolated from step records")
@@ -370,7 +370,7 @@ def _audit_v2(run_dir: Path) -> dict[str, Any]:
 
 
 def audit_bundle(run_dir: Path) -> dict[str, Any]:
-    """Dispatch by the recorded version without upgrading archived fixture data."""
+    """Dispatch by recorded version without upgrading or modifying saved data."""
     run_dir = Path(run_dir)
     try:
         version = json.loads((run_dir / "trace.json").read_text()).get("schema_version")
@@ -378,17 +378,32 @@ def audit_bundle(run_dir: Path) -> dict[str, Any]:
             return _audit_v1(run_dir)
         if version == "offline-fixture-0.2":
             return _audit_v2(run_dir)
+        if version == "live-0.2":
+            from .live_artifacts import audit_live_bundle
+
+            return audit_live_bundle(run_dir)
         raise InvalidBundle("unsupported schema version")
     except InvalidBundle:
         raise
     except (KeyError, TypeError, ValueError, OSError) as exc:
-        raise InvalidBundle(f"invalid fixture bundle: {type(exc).__name__}: {exc}") from exc
+        raise InvalidBundle(f"invalid saved bundle: {type(exc).__name__}: {exc}") from exc
 
 
 def summarize(output_root: Path) -> dict[str, Any]:
-    paths = sorted(p.parent for p in Path(output_root).glob("*/manifest.json"))
-    _require(bool(paths), "no fixture bundles found")
+    output_root = Path(output_root)
+    paths = ([output_root] if any((output_root / name).is_file()
+                                 for name in ("trace.json", "manifest.json")) else
+             sorted({p.parent for name in ("trace.json", "manifest.json")
+                     for p in output_root.glob("*/" + name)}))
+    _require(bool(paths), "no saved bundles found")
     traces = [audit_bundle(p) for p in paths]
+    live = [t for t in traces if t["schema_version"] == "live-0.2"]
+    if live:
+        _require(len(live) == len(traces),
+                 "mixed live and fixture bundles: summarize each evidence set separately")
+        from .live_artifacts import summarize_live
+
+        return summarize_live(paths)
     result = {"evidence_kind": "synthetic_fixture", "study_results_generated": False,
             "provider_api_calls": 0, "runs": len(traces),
             "run_status_counts": dict(Counter(t["run_status"] for t in traces)),

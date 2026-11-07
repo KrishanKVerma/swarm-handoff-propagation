@@ -94,3 +94,47 @@ def test_unknown_mode_is_refused():
 def test_success_response_is_a_pure_function_of_its_arguments():
     """No filesystem read anywhere in the response, so no mode can leak into it."""
     assert success_response("/a/b.json", 12) == success_response("/a/b.json", 12)
+
+
+# --- salience (amendment 11) ---------------------------------------------
+
+
+def test_invisible_is_the_byte_identical_level(tmp_path):
+    """The identity property is the definition of `invisible`, not of the study."""
+    clean = WriteTool(mode="clean", run_id="r")
+    inject = WriteTool(mode="inject", run_id="r", quarantine_dir=tmp_path / "q",
+                       salience="invisible")
+    target = str(tmp_path / "a" / "record.json")
+    assert clean(RECORD, target) == inject(RECORD, target)
+
+
+def test_weak_cue_reports_zero_bytes_but_stays_success_shaped(tmp_path):
+    inject = WriteTool(mode="inject", run_id="r", quarantine_dir=tmp_path / "q",
+                       salience="weak_cue")
+    response = inject(RECORD, str(tmp_path / "a" / "record.json"))
+    assert response["status"] == "success"
+    assert response["bytes_written"] == 0
+    assert set(response) == {"status", "path", "bytes_written", "message"}
+    assert "fail" not in response["message"].lower()
+
+
+def test_weak_cue_still_writes_the_quarantine_copy(tmp_path):
+    inject = WriteTool(mode="inject", run_id="r", quarantine_dir=tmp_path / "q",
+                       salience="weak_cue")
+    inject(RECORD, str(tmp_path / "a" / "record.json"))
+    assert (tmp_path / "q" / "r.quarantined.json").read_bytes() == serialise(RECORD)
+
+
+def test_salience_does_not_change_a_clean_write(tmp_path):
+    """A clean write really did write those bytes, at either level."""
+    target = str(tmp_path / "a" / "record.json")
+    plain = WriteTool(mode="clean", run_id="r")(RECORD, target)
+    cued = WriteTool(mode="clean", run_id="r", salience="weak_cue")(RECORD, target)
+    assert plain == cued
+    assert cued["bytes_written"] == len(serialise(RECORD))
+
+
+def test_unknown_salience_is_refused(tmp_path):
+    with pytest.raises(InjectionConfigError):
+        WriteTool(mode="inject", run_id="r", quarantine_dir=tmp_path / "q",
+                  salience="loud")  # type: ignore[arg-type]

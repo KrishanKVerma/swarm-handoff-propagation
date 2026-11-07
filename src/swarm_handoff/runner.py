@@ -144,7 +144,7 @@ def run_offline(config: RunConfig, output_root: Path, record: dict[str, Any],
         "agent_invocations": 0, "check_invocations": 0, "provider_api_calls": 0,
         "steps": [], "checks": [], "checker_opportunities": [], "confirmed_detections": None,
         "pending_study_contracts": ["verifier discrepancy adjudication",
-                                    "literal canary matching", "failure/continuation policy",
+                                    "failure/continuation policy",
                                     "model, provider settings and credits"],
     }
     blocked = False

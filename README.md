@@ -12,8 +12,9 @@ Design is crossed 2×2: injection (on / off) × verification scheme
 The two clean cells give each scheme its own false-positive rate,
 measured against the number of checks that scheme actually makes.
 
-Framed as survival rather than a flat rate: of the runs with an
-injected failure, what fraction is still uncaught after k handoffs.
+The original survival comparison is retained as design history. Amendment 16
+withdraws it as an informative primary claim; see `PREREGISTRATION.md` and
+`REPORT.md` for the current research framing and reported evidence.
 
 **Verifiers flag only. They never stop the chain and never repair it.**
 Flags do not change task execution. Refusals or execution failures can leave
@@ -23,14 +24,45 @@ Apart Research Swarm Alignment Hackathon, 6–8 November 2026.
 
 ## Team
 
+**On this submission:**
+
 | | |
 |---|---|
-| Krishan Kumar Verma | measurement, pre-registration, report |
-| Ahmed Tariq | runner, trace format, reproducibility |
-| Supriya Kamatagi | agents and A2A handoff, verifier hooks |
-| Dora Zelenyanszki | propagation analysis (empirical) |
-| Soumyajit Karmakar | related work, second coder |
-| Nico Smith | analytical model — predicted survival curve |
+| Krishan Kumar Verma | measurement design, pre-registration and amendments, injection, oracle, canary scorer, checker tools, agent and checker prompts, live runner, analysis, report |
+| Soumyajit Karmakar | related work; LA-hub presentation |
+
+## Contributions from outside the current team
+
+The people below are **not on this submission**. The credits record work they
+contributed before the project split, and the work is theirs whether or not
+they are on the team.
+
+- **Ahmed Tariq** — the trace format and the offline runner, including the
+  Amendment 7 checker-access and flag-isolation implementation, on
+  `feat/offline-runner-traces`, declared preexisting from 5 November where
+  applicable (see Prior work). He also raised the flag-only rule
+  (amendment 3), the checker-evidence question and flag isolation
+  (amendment 7), and both p₁ definitions (amendment 8).
+- **Supriya Kamatagi** — the runner's propagation scoring enum,
+  `PROPAGATED` / `NOT_PROPAGATED` / `MISSING_CANARY` / `INVALID_OUTPUT`
+  (amendment 7).
+- **Nico Smith** — the geometric framing and the independence question in §7
+  (amendment 7).
+- **Dora Zelenyanszki** — the p₁ / p₂ decomposition: splitting per-opportunity
+  detection into a read rate and reporting given a read (§7).
+
+Nobody has been removed as a repository collaborator.
+
+## Two runners
+
+There are two, and they are not duplicates. Ahmed Tariq's offline runner on
+`feat/offline-runner-traces` is fixture-based and predates the sprint in part
+(see Prior work). The live runner on `main` is sprint work: it makes real
+provider calls and emits `live-0.2`, a distinct wire format from
+`offline-fixture-0.2`. The replay CLI accepts both formats. Compatibility tests
+exercise the actual live writer with a scripted provider; they do not establish
+that the empirical pilot files have been replayed. See
+[live replay](docs/live-replay.md) for commands and proof limits.
 
 ## Prior work
 
@@ -51,10 +83,10 @@ The offline runner, fixture tests and replay tooling on this branch began on
 **5 November 2026 (Europe/London), before the sprint**. They are declared
 preexisting preparation. The v0.2 Amendment 7 changes were implemented on
 **6 November after 13:30 Europe/London** and are recorded separately in new
-fixture provenance. Synthetic fixture output is not study data. The
-preregistration's earlier statement that all `src/` code would be written during
-the sprint needs reconciliation with this dated declaration before submission.
-The builders must preserve this provenance when integrating subsequent work.
+fixture provenance. Synthetic fixture output is not study data. Amendment 9
+reconciles the preregistration with this dated declaration. The containment
+matcher and live-format replay integration were added on **7 November**;
+the original preparation retains its earlier provenance.
 
 ## Layout
 
@@ -62,12 +94,15 @@ The builders must preserve this provenance when integrating subsequent work.
 |---|---|
 | `PREREGISTRATION.md` | question, hypotheses, design, endpoints, exclusions, resolution limit, what a null looks like, what this cannot establish |
 | `trace_schema.md` | run, task-step, checker-opportunity and evaluation records |
-| `src/swarm_handoff/` | offline runner, synthetic callbacks and fixture replay |
-| `src/injection.py`, `src/oracle.py`, `src/checker_tools.py`, `src/scoring.py` | shared experiment helpers from main; live adapter reconciliation remains pending |
+| `src/swarm_handoff/` | offline runner, synthetic callbacks and versioned fixture/live replay |
+| `src/injection.py`, `src/oracle.py`, `src/checker_tools.py`, `src/scoring.py` | shared experiment helpers from main |
+| `src/live_runner.py`, `src/provider.py`, `scripts/run_pilot.py` | live execution path maintained on main |
 | `tests/` | data isolation, failure accounting and artifact validation |
 | `scripts/offline_check.py` | one command to test, generate fixtures and replay their counts |
+| `scripts/check_live_replay.py` | actual live writer and replay compatibility check using a scripted provider |
 | `docs/offline-runner.md` | usage, provisional interface and remaining execution gates |
-| `analysis/` | planned empirical analysis, not implemented by this offline package |
+| `docs/live-replay.md` | saved live-run validation, commands and limitations |
+| `analysis/` | shared adjudication, descriptive summaries and statistics |
 
 ## The three things that decide the build
 
@@ -83,26 +118,26 @@ The builders must preserve this provenance when integrating subsequent work.
    and never transforms; propagation to step *k* is that code appearing
    in agent *k*'s `asserted` output fields. C also propagates if its structured
    verdict is `pass`, even without the code. Clean runs and A's origin are not
-   propagation events. The offline exact-value matcher remains an explicit
-   fixture policy pending agreement for live use. (§5)
+   propagation events. New fixtures follow Amendment 8: case-sensitive token
+   containment in recursive string values, never object keys. Archived fixtures
+   retain their recorded matching policy. (§5)
 3. **A run in which only the task caught the discrepancy counts as
    uncaught** for the primary endpoint, and stays in the denominator.
    The primary measures the verification scheme, not the chain. (§6)
 
 ## Status
 
-The preregistration and its amendment history precede empirical collection.
-The offline v0.2 implementation incorporates Amendment 7's strict C verdicts,
-optional checker reads and flag isolation. It logs one checker opportunity per
-scheduled boundary and distinct evaluations for repeats. Replay preserves the
-original v0.1 examples. All generated data is synthetic and ineligible for study
-endpoints; the CLI makes no provider calls and consumes no credits.
+The offline v0.2 implementation includes Amendment 7's strict C verdicts,
+optional checker reads and flag isolation, plus Amendment 8 containment.
+Replay preserves original v0.1/v0.2 matching policies and saved bytes.
+The `swarm-handoff` CLI generates only synthetic fixtures or reads saved data;
+it makes no model calls. The separate live execution path is already present.
 
-Exact matching, discrepancy adjudication, failure/continuation rules and the
-live model, API access and pilot budget still need agreement. No live provider
-adapter or empirical execution mode is included. Summaries provide fixture
-counts and read diagnostics; the proposed read/report decomposition and
-independence comparison remain analysis work, not measured results.
+Saved `live-0.2` runs are validated against the producer's exports, handoffs,
+propagation, optional reads and repeat-zero opportunity records. Summaries use
+the shared analysis without pooling live and fixture evidence. The compatibility
+probe generates mocked runs, not empirical results. Actual pilot traces are not
+checked into this repository; replaying them requires their saved run folders.
 
 The runner runtime uses the standard library. Full repository checks also need
 the pinned pytest development dependencies, including the shared helper tests.

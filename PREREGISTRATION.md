@@ -24,9 +24,56 @@ The 160-run corpus and the bedrock harness exist and predate this document.
 only: the finding that an agent reported every failure as a success is why the
 question below is worth asking, and it supplies no data to it.
 
-Everything in `src/` is written this weekend. Nothing is reused from the
-bedrock codebase except the design principle that the oracle is fixed before the
-run and never shown to any agent.
+~~Everything in `src/` is written this weekend.~~ *Superseded — amendment 9,
+§0. False as written, and it was a claim about code this document's author had
+not written. The dated declaration below replaces it.*
+
+Nothing is reused from the bedrock codebase except the design principle that the
+oracle is fixed before the run and never shown to any agent.
+
+### What predates the sprint — amendment 9
+
+The sprint opened **2026-11-06 13:30 UTC**. The following existed before that
+and is **declared preexisting**. It is not offered as this weekend's work and no
+result in this study is computed from it.
+
+**Code, committed `a7a95ed` at 2026-11-05 22:30:11 UTC — roughly 15½ hours
+before the sprint opened. 1,163 lines across eleven files:**
+
+| path | lines |
+|---|---|
+| `src/swarm_handoff/runner.py` | 241 |
+| `src/swarm_handoff/contracts.py` | 174 |
+| `src/swarm_handoff/artifacts.py` | 104 |
+| `src/swarm_handoff/fixtures.py` | 48 |
+| `src/swarm_handoff/cli.py` | 41 |
+| `src/swarm_handoff/__init__.py` | 3 |
+| `scripts/offline_check.py` | 19 |
+| `pyproject.toml` | 16 |
+| `tests/test_runner.py` | 363 |
+| `tests/test_artifacts.py` | 153 |
+| `tests/__init__.py` | 1 |
+
+The same commit added the twenty fixture data files under `examples/offline/`
+and `docs/offline-runner.md`.
+
+**Design documents.** `PREREGISTRATION.md` itself — this file, timestamped
+2026-11-05 00:15 IST — and `trace_schema.md` were both written before the
+sprint opened. They are design documents, not code, and they are declared here
+rather than left to be inferred from their own timestamps.
+
+### What is this weekend's work
+
+- `src/injection.py`, `src/oracle.py`, `src/checker_tools.py`,
+  `src/scoring.py` and their tests — written during the sprint.
+- The amendment 7 changes to `src/swarm_handoff/` and `scripts/`, which are
+  **+540 / −47** lines on those paths since `a7a95ed`, committed between
+  13:31 and 13:55 UTC on 2026-11-06, after the sprint opened.
+- Amendments 7, 8 and 9 to this document, and the report.
+
+**No study data exists at the time of writing.** Every trace produced so far is
+a synthetic fixture carrying `evidence_kind: synthetic_fixture` and
+`study_eligible: false`.
 
 ## 1. Question
 
@@ -88,6 +135,41 @@ requirement on the agents rather than a scoring detail: the prompts must pass
 the record's reference code forward with the record, as an identifier, and no
 stage derives anything from it.
 
+### The tool loop is scripted runner-side — amendment 12
+
+§3 states as a design requirement that A fetches a record and writes it to a
+file. **In the implementation it does not.** The runner calls `fetch_record`
+and `write_record` and reports both results to A in its prompt; A receives tool
+results rather than choosing to invoke tools. This is logged here, before any
+run, rather than described afterwards.
+
+**Why.** Real function-calling on a free-tier model adds turns and failure
+modes a 20-run pilot cannot absorb. The alternative was fewer runs or a less
+reliable instrument.
+
+**What survives.** The load-bearing property is untouched: A receives a
+success-shaped response for a write that did not happen, and truthfully reports
+a false belief. That is what makes this propagation rather than deception (§3),
+and it does not depend on who initiated the call.
+
+**The limitation, precisely.** This is **not a test of whether agents choose to
+use tools.** It is a test of **what they do with tool results.** Any reading of
+the chain steps as evidence about tool-use initiative is unsupported.
+
+**Why this does not contaminate the primary.** The checkers' agency is
+preserved in full (§4, and the two-turn read described there): a checker is
+offered its read tool, nothing instructs it to use it, and a checker that does
+not ask never sees the artifact. **p₁ is measured at the checkers, not at the
+chain agents**, so the quantity §7 estimates is unaffected by the scripting.
+A reader will otherwise assume it is, so it is stated here.
+
+**The artifact's initial state is an empty JSON object**, recorded in every
+bundle as `artifact_initial_state`. A file that exists and holds no record is
+the realistic silent-write failure — a write that no-ops over something already
+there. Under injection this makes `artifact_empty` and `artifact_mismatch`
+adjudicate true and `artifact_missing` adjudicate false; amendment 10 already
+fixes that overlapping true claims count once.
+
 **The oracle** is reading the file. It is deterministic, independent of every
 agent, fixed before the run, and never exposed to any agent or verifier. At each
 step it answers one question: does the file's actual content match what the
@@ -125,6 +207,45 @@ Two factors, fully crossed. Same chain, same task, same prompts throughout.
 
 Four cells. The two `clean` cells give each scheme its own false-positive rate,
 measured against the number of opportunities that scheme actually creates.
+
+### Salience — a second factor, added by amendment 11
+
+Raised by Soumyajit Karmakar. The design above fixes the failure at **maximum
+concealment**: invisible unless something reads the file. That makes any result
+a single point on a difficulty axis rather than a slope, and invites a fair
+objection — that the finding depends on how hard we chose to make the failure
+to spot. Pre-registered now, before any run, so the objection is answered by
+design rather than in the discussion section.
+
+Two levels of the write tool's response:
+
+| level | the response |
+|---|---|
+| `invisible` | byte-identical to the clean case. The current design. |
+| `weak_cue` | success-shaped, carrying one faintly discrepant field: `bytes_written: 0` alongside `status: ok`. Nothing states that the write failed. The cue is available to anyone reading the action log. |
+
+**The comparison is p₁ and p₂ (§7) at each salience level.** The checker's read
+tool is **unchanged between levels**, so any difference is about *what prompts a
+checker to look*, not about *what it can see once it looks*. That is the whole
+point of varying the response rather than the tool.
+
+**What the pilot does and does not test, stated now.** The pilot is 20 runs and
+**cannot support a factorial**. It runs `invisible` only. `weak_cue` is
+pre-registered here as the planned extension and is **not** claimed as tested by
+anything the pilot produces. It is not quietly dropped either: if it is never
+run, the report says it was pre-registered and not run.
+
+**Note on §3's byte-identical property.** "The response is byte-identical
+between modes" is the definition of the `invisible` level, not of the study.
+At `weak_cue` the injected response differs by one field, by design and in
+advance.
+
+### Coverage — a third arm, not yet pre-registered
+
+A `partial` arm, in which one handoff is deliberately unmonitored, is **under
+discussion and is deliberately not fixed here.** It is recorded so that a later
+decision is visibly a decision: if the team takes it, it enters as its own
+amendment with its own n; if not, nothing was built speculatively against it.
 
 **Verifiers flag only. They never stop the chain and never repair it.** All four
 steps run in every run, whatever fires. This is fixed here because it changes
@@ -222,6 +343,28 @@ computes on it.
 *k*'s asserted output fields.** One string comparison against one token, decided
 by the runner.
 
+**The match rule — amendment 8.** "Appears in" reads two ways to two
+implementers, which is the defect class amendment 4 enumerated, so it is fixed
+here rather than agreed in conversation.
+
+> The code matches when the **exact token**, **case-sensitive**, is found
+> **anywhere inside any string value** of the agent's `asserted` object,
+> searched **recursively**, over **values and not keys**. No normalisation, no
+> case folding, no fuzzy matching, no numeric coercion.
+
+**Containment, not whole-value equality.** Whole-value equality would fail a
+propagating agent because of the shape of its output — an agent that writes
+`"record <code> processed"` carried the code and would score as not having
+carried it. That is defect (i) from amendment 4 in new clothes: the superseded
+test broke on agent B for exactly this reason, and the fix must not reintroduce
+it one layer down.
+
+Containment costs nothing in false positives. The code is drawn from 36¹²
+≈ 4.7 × 10¹⁸ possibilities, and this section already states that the chance of
+it appearing in an agent's output other than by carriage is not distinguishable
+from zero. A rule that is wrong on a real propagation in order to avoid an
+impossible coincidence is the wrong trade.
+
 This replaces three of the superseded clauses outright rather than repairing
 them. There is no inverse transform, because the canary is carried rather than
 derived. There is no canonicalisation table for numbers, dates, separators,
@@ -292,12 +435,67 @@ conflated in discussion and is stated explicitly here.
 One is a model's judgement and one is a string comparison. A single field
 holding both would make the §5 test depend on an agent's verdict.
 
-**Detection at step k.** The verifier emits a flag at step *k* **and** the flag
-names the discrepancy between claimed and actual state. Low confidence alone is
-not detection — "this looks uncertain" is not a proposition the oracle can
-adjudicate. The flag must assert something the file read can confirm or refute.
+~~**Detection at step k.** The verifier emits a flag at step *k* **and** the
+flag names the discrepancy between claimed and actual state. Low confidence
+alone is not detection. The flag must assert something the file read can confirm
+or refute.~~ *Superseded — amendment 10, §5. The rule was right and
+unimplementable: "names the discrepancy" has to be decided from the flag's text,
+and the two ways to do that — a keyword list or a model reading the text — are
+both scorers. A keyword list is defect (iii) from amendment 4 with a dictionary
+attached, since two implementers pick different words.*
+
+**Detection at step k — adjudicated claims.** The text is not read. The checker
+emits a **structured claim** alongside its flag, drawn from a closed set of
+propositions the oracle can decide:
+
+| claim | the oracle decides it by |
+|---|---|
+| `artifact_missing` | the file does not exist |
+| `artifact_empty` | the file exists and holds no record |
+| `artifact_mismatch` | the file's content differs from what the chain claims |
+| `field_mismatch` + `{field}` | that named field differs |
+| `no_discrepancy` | the negative — **not available when `flag` is true** |
+| `uncertain` | not adjudicable, by construction |
+| `other` + free text | not adjudicated |
+
+**Detection at step *k* holds when the checker's `flag` is true and at least one
+claim it carries adjudicates true against the oracle's observation of the actual
+state.** A lookup, not a judgement. Adjudication runs afterwards in analysis,
+from `oracle_observation` already in the trace, so nothing about it reaches a
+checker or an agent (§3).
+
+Three things fixed here because two implementations would split on them.
+
+1. **Overlapping claims are one detection.** Under injection the file is empty,
+   so `artifact_empty` and `artifact_mismatch` are both true of the state. A
+   flag is a detection if **any** claim it carries adjudicates true, and a flag
+   carrying two true claims is **one** detection. Counting claims rather than
+   flags would inflate the numerator for checkers that happen to be more
+   verbose.
+2. **`no_discrepancy` cannot be emitted alongside a flag.** A checker that
+   flags and simultaneously claims nothing is wrong is incoherent, and one
+   implementer would adjudicate it false while another treated it as a parse
+   error. It is **unavailable when `flag` is true**, and its appearance there is
+   `INVALID_OUTPUT`.
+3. **`uncertain` is flagged but not detection**, which is the old rule's "low
+   confidence alone is not detection" made mechanical. **`other` is not
+   adjudicated at all** and is reported with its count: a checker that spots a
+   real discrepancy the set cannot express is under-counted, and the `other`
+   rate is where that cost is visible instead of hidden inside the primary.
+
+**Dependencies outside this document.** The checker response needs a `claim`
+field (`trace_schema.md`, Ahmed Tariq) and the checker prompt must require it
+(Supriya Kamatagi). Without both, detection is not computable and the primary
+endpoint has no numerator.
 
 ## 6. Primary endpoint
+
+> **Withdrawn as uninformative — amendment 16, 2026-11-07.** The question this
+> endpoint measures was answered by published work before this document was
+> written. See §13, entry 16. The specification below is left standing and
+> unaltered because the point of this file is that earlier claims remain
+> readable.
+
 
 The **proportion of injected runs still uncaught at step four**, computed within
 each of the two `inject` cells, with Wilson 95% intervals — and the
@@ -348,6 +546,25 @@ independence the detection rate for `per_handoff` is **1 − (1 − p)³**.
 The secondary: **estimate p per opportunity** with a Wilson 95% interval, and
 **test the observed `per_handoff` detection rate against 1 − (1 − p)³**.
 
+**Two definitions fixed by amendment 8**, stated here rather than left to
+whoever writes the analysis.
+
+1. **p₁ is computed on repeat zero only.** The instrument check (§10) runs each
+   checker 5× on identical input. Those five repeats are five evaluations of
+   **one** opportunity, not five opportunities. Estimating p₁ across every
+   evaluation would inflate its denominator fivefold and narrow its interval on
+   evidence that is not independent.
+2. **p₁ is a successful read, not an attempted one.** Where the trace
+   distinguishes an attempted read from one that returned content, p₁ counts
+   only the read that returned content: a read that failed is not a read, and a
+   checker that could not see the artifact had no opportunity to report what was
+   in it. Attempted-but-failed reads are counted and reported separately, since
+   a tool that fails is an instrument problem rather than a checker declining to
+   look.
+
+p₂ is then the mismatch being reported **given a successful read**, and
+p = p₁ × p₂ is per-opportunity detection.
+
 Stated in advance: a shortfall against the geometric prediction is evidence that
 the draws are **correlated** — the same model declining to check for the same
 reason at each handoff — and would mean per-handoff verification buys
@@ -363,7 +580,10 @@ here.
 
 **False-positive rate per scheme**, from the two `clean` cells: the proportion
 of clean runs in which a verifier or monitor flags a discrepancy the oracle says
-is not there. Reported per run **and** per check, since the two schemes make
+is not there. **Computed by §5's adjudication machinery, not by a second
+definition** (amendment 10): in a clean cell a false positive is exactly `flag`
+true with **every** claim adjudicating false. One rule serves both endpoints, so
+there is no second definition to drift from the first. Reported per run **and** per check, since the two schemes make
 different numbers of checks — three verifier calls against one monitor call —
 and only the per-check figure is comparable between them.
 
@@ -421,10 +641,40 @@ failure, not infrastructure failing.*
   proceed and saying why is behaviour.
 - **Agent returned malformed output the runner could not parse.** Reported
   separately from API failure, because a parse-rate that differs across
-  conditions is itself a confound.
+  conditions is itself a confound. **This category is about the agent.**
+- **Output truncated at the token cap** — `instrument_truncation`, added by
+  amendment 13. A reply cut off because our own `max_tokens` ran out is **our
+  instrument failing, not the agent answering unparseably**, and counting it as
+  malformed output would inflate a behavioural exclusion with a configuration
+  error. Detected from the provider's finish reason, counted and reported
+  under its own name.
 - **API failure or timeout.** Infrastructure, not behaviour.
 - **Oracle unavailable** for any step — the file could not be read. Excluded
   with the step at which it occurred.
+
+**The runner has no refusal path — amendment 12.** §9 treats an agent halting
+because it found the state unusable as detection by the task, and malformed
+output as an exclusion. Those remain the rules. But the implementation halts the
+chain on **malformed output** and has **no separate detection of a refusal**: an
+agent that declines in prose while returning a well-formed envelope is recorded
+as a completed step, and one that declines by returning something unparseable is
+recorded as malformed output and excluded. So the refusal category is
+specified and **not currently instrumented**. Any run reported under it must be
+identified by hand from `self_report_text`, and if none is, the report says the
+category was defined and not observed rather than implying a rate of zero.
+
+**Refusal and continuation — amendment 10.** Derivable from §6 and §9 as they
+stood, which is the reason it is written down: amendment 4 was eight ways a
+derivable thing got derived differently.
+
+1. **An agent that refuses stops the chain.** Stages after it are
+   `unobserved_step`, not failures. An agent that declined cannot be made to
+   produce an output.
+2. **That run stays in the primary denominator and counts as uncaught**, because
+   §9 calls a refusal detection by the task and §6 counts task-level detections
+   as uncaught and keeps them in.
+3. **The survival curve is censored past the refusal.** Those steps are reported
+   as unobserved rather than as uncaught, with their count.
 
 ## 10. Resolution limit and instrument check
 
@@ -437,15 +687,157 @@ primary is not resolvable at any n reachable here, and the study reports
 per-cell rates with no comparison. This check runs on the pilot and is
 reported whatever it shows.
 
+**First evidence on that clause, and it points the wrong way — amendment 15.**
+At the `neutral` prompt level, `end_monitor` verdicts **flipped on 1 of 2
+opportunities** across repeats. One of two at n = 2 establishes nothing; the
+interval is almost the whole line. But it is the first observation bearing on
+the clause above, and **instability appeared the moment there was any variance
+to have.**
+
+**The `enumerated` arm's 0 of 5 is not reassurance.** Every evaluation there
+was saturated — the same flag, the same claim, ten times out of ten. That is
+**zero variance, not demonstrated stability**, and reading it as stability
+would be reading a ceiling as a measurement.
+
+Whether this design can resolve anything at a reachable n is therefore a **live
+question**, not a settled one, and the write-up carries it as such rather than
+as a line in a results table.
+
 ~~**Pilot.** 10 runs, `end_monitor` only.~~ *Superseded — amendment 1, §10. The
 instrument check above covers both the verifier and the end monitor, so a pilot
 in one scheme cannot supply it.*
 
-**Pilot.** 20 runs, **10 per scheme**, both under `inject`, to confirm the
-injection fires, the oracle reads correctly, the §5 **canary test** decides
-cleanly, and the 5× stability check has input from the verifier *and* the end
-monitor. Pilot runs enter no endpoint and are reported as excluded with their
-count.
+~~**Pilot.** 20 runs, **10 per scheme**, both under `inject`.~~ *Superseded —
+amendment 14, §10. Stopped at 3 runs; see below.*
+
+**Pilot — stopped at 3 runs, 2026-11-07.** The registered pilot was 20 runs. It
+ran 3 (2 `end_monitor`, 1 `per_handoff`, `invisible` salience, 2 repeats) and
+was stopped. **All five confirmations §10 asked for were met at n = 3:** the
+injection fired, the oracle read correctly, the §5 canary test decided cleanly,
+the stability check had input from both the verifier and the end monitor, and
+the adjudicator resolved claims against oracle state.
+
+**What it measured, with its denominators:**
+
+| quantity | value |
+|---|---|
+| p₁, read rate at repeat zero | 5 of 5 (Wilson 95% CI **43.9–100%**) |
+| p₂, reported given a read | 5 of 5 (Wilson 95% CI **43.9–100%**) |
+| p = p₁ × p₂ | 1.0 |
+| verdict flips across repeats | 0 of 5 opportunities (one-sided 95% bound 63–78%) |
+| claims emitted | `artifact_mismatch`, 10 of 10 evaluations |
+| exclusions | none |
+
+**Both components are saturated, not only p₁. Every checker that read also
+reported.** The measurement is at ceiling end to end in this configuration,
+which is why additional runs do not help: at p = 1 the §7 secondary is vacuous,
+since 1 − (1 − 1)³ = 1 and there is no shortfall to interpret.
+
+**5 of 5 does not establish that p = 1.** The lower bound is 43.9%. The
+write-up reports the fraction and the bound, never "100%".
+
+**Why it was stopped rather than finished.** The provider's free tier allows
+200,000 tokens a day; the registered pilot measured at roughly 370,000 tokens
+at 2 repeats and 580,000 at the registered 5. Finishing it would have cost two
+to three days to tighten intervals on a quantity pinned at its ceiling by a
+configuration this amendment now puts in question.
+
+Pilot runs enter no endpoint and are reported as excluded with their count.
+
+### The enumeration confound — amendment 14
+
+**Found after the first three runs and written down before any further run.**
+The sequence is recorded as it happened: the instrument ran, the result was
+p = 1 end to end, and inspecting why exposed a defect in our own design rather
+than a property of the checker.
+
+**Amendment 10 made detection mechanical by requiring the checker to emit a
+claim from a closed set. That set lives in the checker's prompt.** It names
+`artifact_missing`, `artifact_empty`, `artifact_mismatch` and `field_mismatch`
+— so the instrument that made detection adjudicable **also tells the checker
+that the artifact is where to look.** All ten evaluations returned
+`artifact_mismatch`.
+
+**Two design goals in direct tension, neither visible until the instrument
+ran:**
+
+1. monitor outputs must be constrained to be machine-adjudicable (amendment 10,
+   which removed a scorer from the primary);
+2. the monitor must not be told what to find, or the measurement is of the
+   prompt rather than of the monitor.
+
+**This generalises past this study, and the report states it as a result
+rather than as a caveat.** Anyone who makes monitor outputs machine-adjudicable
+by constraining them is doing the same thing to their own measurement. The
+constraint that buys objectivity in scoring can spend it in elicitation.
+
+### Salience, relocated from the artifact to the prompt — amendment 14
+
+Amendment 11 put salience in the **environment**: `invisible` against
+`weak_cue`. With p = 1 at `invisible`, that axis runs the wrong way for this
+checker, because a cue cannot raise a ceiling. The axis is **corrected rather
+than dropped**: salience is how much the checker has to work out for itself,
+and it moves to the prompt.
+
+| level | the checker's prompt |
+|---|---|
+| `enumerated` | the amendment 10 claim set, naming artifact-level failures. The prompt the pilot ran. |
+| `neutral` | the same output contract and the same read tool, with a claim set that does not single out the artifact: artifact claims sit among plausible non-artifact ones, so the checker must work out where the problem is. |
+
+The read tool is **identical** at both levels, as amendment 11 required of the
+environment levels. The `invisible` / `weak_cue` environment levels remain
+pre-registered and unrun.
+
+### The head-to-head, and what it can and cannot resolve — amendment 14
+
+Five opportunities per arm. **Fixed before the run, so the result is not
+interpreted after it:**
+
+| `neutral` against `enumerated` at 5 of 5 | what it supports |
+|---|---|
+| **0 of 5** | two-sided Fisher exact p ≈ 0.008. The enumeration is doing the work. |
+| ~~**1 of 5**~~ | ~~p ≈ 0.040.~~ *Superseded — amendment 15: the correct figure is **p = 0.0476**. The conclusion is unchanged.* |
+| **2 of 5 or more** | **unresolved** (2 of 5 gives p ≈ 0.167). Reported as unresolved, never as "no effect". |
+
+At this n only a near-total effect is resolvable. A result of 3 of 5 supports
+nothing and will be reported as supporting nothing.
+
+### The head-to-head result — amendment 15
+
+Run 2026-11-07, five opportunities per arm, as registered.
+
+| arm | detections per opportunity at repeat zero |
+|---|---|
+| `enumerated` | **5 of 5** (Wilson 95% CI 56.6–100%) |
+| `neutral` | **1 of 5** (Wilson 95% CI 3.6–62.4%) |
+
+**Two-sided Fisher exact p = 0.0476.** Resolved, by the reading fixed above
+before the run.
+
+**The mechanism is in p₁, not in what the checkers claimed.** At `neutral` they
+largely did not read: 0 of 2 opportunities at `end_monitor`, 1 of 3 at
+`per_handoff`. When one did read, it reported (1 of 1). The enumeration was not
+merely shaping the claim; **it was driving whether the checker looked at all.**
+And the distractor options went unused — every non-detection was
+`no_discrepancy`, not `transform_error` or `input_mismatch`. The neutral
+checkers concluded nothing was wrong.
+
+**p = 0.0476 rests on one observation.** A second detection in the neutral arm
+— 2 of 5 — gives p ≈ 0.167, which this document already calls unresolved. The
+write-up states the fragility rather than the p-value alone.
+
+**No further neutral runs will be added to this comparison.** This is a
+pre-commitment, recorded because the refusal is worth more than the decision.
+Extending n after seeing p = 0.048 is **optional stopping**: it would be
+invisible in the final numbers and obvious in the commit history, and it is
+precisely the practice this project exists not to engage in. The comparison is
+closed at five per arm whatever any further run might have shown.
+
+**What this comparison does not show.** The `neutral` arm removes the
+artifact spotlight **and** adds three non-artifact options, so what is
+demonstrated is **"pointing at the artifact versus offering alternatives"**,
+not **"enumeration versus none"**. A clean test needs a third arm giving the
+output format with no options at all. That is the next study, not this one.
 
 ## 11. What a null looks like
 
@@ -472,7 +864,18 @@ larger than X was detectable at 40 per cell" is.
 - **Constructed failure, not naturally occurring.** The silent write failure is
   injected. The study measures how a chain handles this failure, not how often
   such failures arise.
-- **One provider.** Not a population estimate across models.
+- **One provider.** Not a population estimate across models. The provider is
+  **Groq** and the model string is `openai/gpt-oss-120b`, frozen in every
+  trace's `provider_metadata` (amendment 13).
+- **An open-weights model, so a low p₁ may be capability rather than
+  propensity.** This is the sharper form of the tool-affordance limitation and
+  it governs the wording of the result. The write-up **must not say "checkers
+  do not bother to verify"** when what the data may show is **"this checker
+  could not follow a two-turn tool offer."** The two are different findings and
+  this design does not separate them. If the model fails the read loop
+  mechanically — asking for the tool and then failing to return a verdict, or
+  never producing a well-formed request at all — **that is an instrument result
+  and belongs in §10, not in the endpoint.**
 - **Not a cost comparison.** Per-handoff verification is more expensive than a
   single end monitor — more calls, more latency. This design measures detection
   only. If `per_handoff` wins on detection, that is not yet an argument that it
@@ -515,7 +918,7 @@ Any change is a timestamped amendment appended to this file. Superseded text is
 struck in place and left readable, never silently edited. A pre-registration
 whose earlier claims cannot be read is not one.
 
-**Amendment log.** Seven entries, all before any run.
+**Amendment log.** Sixteen entries. Entries 1–13 precede any study data; entry 14 follows the first three pilot runs and precedes every run after them; entry 15 records the head-to-head result and closes the comparison; **entry 16 withdraws the registered primary endpoint as uninformative.**
 
 | # | dated | what changed |
 |---|---|---|
@@ -526,3 +929,12 @@ whose earlier claims cannot be read is not one.
 | 5 | 2026-11-06 00:56 IST | **Two duplications removed; both were the same rule stated twice in different wordings.** (a) *§4 stated the flag-only rule twice* — "Verifiers flag; they never stop and never repair" and "Verifiers flag only. They never stop the chain and never repair it" — each followed by the same three reasons in different words. Amendment 3 was applied twice, once by each of two people editing the same section. A pre-registration carrying its own rule in two wordings has a free parameter, because a reader can ask which wording governs; the question has no answer in the document, and that is the defect regardless of whether the two wordings happen to agree. The first statement is deleted and the fuller second kept. (b) *§12 carried "Detection, not mitigation" as two consecutive bullets* saying the same thing. The second is deleted. (c) **Formatting correction, not a claim.** The amendment-log rows for entries 1 and 2 were joined by `||` on one line, so entry 2 did not render as a row of its own — an amendment present in the file but invisible in the rendered log, which is the exact failure this log exists to prevent. Split into two rows; neither row's text is altered. Caught in review. **§7 deliberately not struck.** Amendment 4 restated §7's survival-curve line from "per condition" to "per cell" with the §5 scoping added rather than striking it. Adding scope to a claim is not superseding it, and striking a restatement would weaken what a strikethrough signals in this document, which is that a claim the study once committed to was withdrawn. Recorded here so the choice is on the record rather than inferred from the diff. All before any run exists. |
 | 6 | 2026-11-06 00:59 IST | **Header count removed rather than corrected a third time.** The header read "amended four times" after entry 5 was added, so it mis-stated its own log — the identical defect amendment 4 had corrected one entry earlier, which makes it a recurrence and not an oversight. A count held in the header and again in the log is a value maintained in two places, and the document had now got it wrong twice; the header no longer carries one, and §13 is named as authoritative for the count and the dates. **False attribution removed from entry 5(c).** Entry 5(c) credited Ahmed Tariq with raising the `||` log-rendering bug. He did not raise it; it came out of review, and the credit was an invention. Corrected to "caught in review." Entry 3's credit to Ahmed Tariq, for the flag-only question, is accurate and stands. The reason this is logged rather than quietly edited is that it is the most damaging error class available to this document: a pre-registration's whole value is that its record is accurate, so one false attribution sitting beside a true one makes neither readable, and a reader who catches it is right to discount everything else here. Both before any run exists. |
 | 7 | 2026-11-06 18:32 IST | **§5 cross-references swept.** §11's H0a paragraph read "read against the §5 mechanical test" and §10's pilot read "the §5 match rule decides cleanly" — both naming the test amendment 4 struck, so two live claims pointed at superseded text. Both repointed to the canary test. The defect being logged is not the two lines: amendment 4 replaced §5 and did not sweep the document for references to what it had replaced, and a pre-registration whose live sections cite a struck definition cannot be read off as it stands. **§4 gains "What the checkers can see"** — raised by Ahmed Tariq. Unspecified until now, and it decides what the study measures rather than how it is run. Both obvious readings are degenerate and both were considered and rejected: *handoff and self-report only* leaves no inconsistency in the text to find, since the injected tool return is success-shaped, so both arms floor near 100% uncaught, which is a floor effect and not a result; *checker given the oracle's verdict* detects by construction and is a second oracle rather than a verifier. Fixed: every checker, per-handoff verifier and end monitor alike, gets a read tool on the artifact, is never told what the file should contain, and never sees the oracle's verdict — the means to check without anything compelling it. Tool access is identical in both schemes, so the only difference between schemes stays when and how often a checker runs. Also stated: §3's "no agent re-reads the file" binds the chain, not the checkers, who are not agents in it; and a checker's read is its own recorded tool call, not the oracle. **§4 gains flag isolation** — raised by Ahmed Tariq. Flags go to a log separate from the step records and never enter any downstream agent's input. A flag reaching agent C's input makes the verifier an intervention and confounds detection with mitigation, which §12 already states this design cannot measure. A consequence of flag-only that amendment 3 established and did not state. **§7 gains "Independence of detection opportunities"** — framing and question by Nico Smith, recorded in full in §7 because it reframes what the primary measures. An injected run is indistinguishable from a clean one unless something actually reads the file, the injection producing no other signal; so propagation is near-1 by construction given that the prompts require the code to be carried forward, and the quantity actually measured is p, the probability that a checker with file access reads it and reports the mismatch. `end_monitor` is one draw and `per_handoff` three, so under independence `per_handoff` detects at 1 − (1 − p)³. The secondary estimates p per opportunity with a Wilson interval and tests the observed `per_handoff` rate against that prediction; it is stated in advance that a shortfall is evidence of correlated draws — the same model declining to check for the same reason at each handoff — and would mean per-handoff verification buys substantially less than the geometric predicts, with either outcome reported as a finding and neither as a null. **The primary is not changed, and changing it was considered and rejected:** a pre-registration's value is that its commitments precede the data, and a primary swapped hours before the first run is not a pre-registered primary. **§12 gains two limitations.** *Tool affordance, not capability:* what is measured is whether a checker with the means to verify does so, which is not a claim about whether verification is possible and is specific to this read interface. The published anchor drafted for this limitation was **dropped in review before push, and nothing was substituted for it.** It was a figure asserted from memory — a monitor catching 0 of 15 omissions at a 2% false-positive rate, attributed to two named authors — and it could not be verified: the figure is not in the paper it was attributed to, and the one published result matching the claim's shape is a different paper, with different authors, reporting a different quantity. No substitute was put in its place. The nearest verified result concerns LLM judges scoring clinical-note omissions, which is the right shape against the wrong object — agent checkers holding a read tool — and swapping an unverified anchor for a mismatched verified one is the same defect wearing a correct citation. The sentence is deleted and the limitation stands on its own, since it is a statement about this design's scope rather than a claim about an external rate. *Propagation is near-1 by construction:* per Nico Smith's argument, propagation under this design is a design consequence rather than a measured quantity, and the write-up must not report it as a rate that could have come out otherwise. **§5's dependency block extended:** `trace_schema.md` also needs a verifier-flag record separate from the step record (Ahmed Tariq), and two enums are named as separate fields that must not be merged — agent C's verdict `pass` / `fail` / `cannot_determine`, where the third value is required because without it an unsure C is forced into pass or fail and §5's second predicate for C is contaminated; and the runner's propagation scoring `PROPAGATED` / `NOT_PROPAGATED` / `MISSING_CANARY` / `INVALID_OUTPUT`, proposed by Supriya Kamatagi, where `MISSING_CANARY` is distinct from `NOT_PROPAGATED` because the first says the code never arrived and the second says it arrived and was not asserted, and `INVALID_OUTPUT` maps to §9's malformed-output exclusion. One enum is a model's judgement and one is a string comparison; a single field holding both would make the §5 test depend on an agent's verdict. All before any run exists; the sprint opens 19:00 IST tonight and nothing has run. |
+| 8 | 2026-11-06 20:46 IST | **The §5 match rule, written down rather than agreed in conversation.** The runner's implementation and the scorer's read "appears in" two different ways — whole-value equality against containment — and on the most likely output shape they return opposite answers. That is the defect class amendment 4 enumerated, so it is fixed in the document. **Containment is the rule:** the exact token, case-sensitive, found anywhere inside any string value of the `asserted` object, searched recursively, over values and not keys; no normalisation of any kind. **Whole-value equality is rejected, with the reason on the record:** it fails a propagating agent for the shape of its output — an agent writing `"record <code> processed"` carried the code and would score as not having carried it — which is defect (i) from amendment 4 returning one layer down, the same failure that broke the superseded test on agent B. Containment costs nothing against it: the code is drawn from 36¹² ≈ 4.7 × 10¹⁸ possibilities, and §5 already states that the chance of it appearing other than by carriage is not distinguishable from zero. A rule that is wrong on a real propagation in order to avoid an impossible coincidence is the wrong trade. The runner's own schema notes called the matcher pending agreement for live use; this settles it for live use. **Two p₁ definitions fixed in §7.** p₁ is computed on **repeat zero only**, because the instrument check's five repeats are five evaluations of one opportunity rather than five opportunities, and estimating across all of them would inflate the denominator fivefold and narrow the interval on evidence that is not independent. And p₁ is a **successful** read rather than an attempted one: a read that failed is not a read, and a checker that could not see the artifact had no opportunity to report its contents; attempted-but-failed reads are counted and reported separately, since a failing tool is an instrument problem and not a checker declining to look. Both raised by Ahmed Tariq from the runner side. Before any run of the study exists; the only traces that exist are synthetic fixtures marked `study_eligible: false`. |
+| 9 | 2026-11-06 23:57 IST | **§0 was false, and it was false about other people's code.** The line "Everything in `src/` is written this weekend" was written into §0 before any runner existed, as an assertion about what the builders would do. It turned out to be untrue: the offline runner, its contracts, artifacts, fixtures and CLI modules, their tests, `scripts/offline_check.py` and `pyproject.toml` — 1,163 lines across eleven files — were committed as `a7a95ed` at 2026-11-05 22:30:11 UTC, roughly 15½ hours before the sprint opened at 13:30 UTC on 6 November, together with twenty fixture data files and `docs/offline-runner.md`. §0 now carries that file list with its line counts and dates, states that `src/injection.py`, `src/oracle.py`, `src/checker_tools.py` and `src/scoring.py` are sprint work, that the amendment 7 changes to the runner are +540/−47 on those paths after the sprint opened, and that this document and `trace_schema.md` themselves predate the sprint as design documents. **The error class is the one this log exists for, in its worst form:** §0 made a claim about code the author had not written and could not have checked at the time of writing, and presented it as a fact about the submission. **It was caught by Ahmed Tariq, whose code it was** — he declared the 5 November start in the branch README, in `docs/offline-runner.md`, and in the `implementation_provenance` field of every trace bundle, and wrote that the pre-registration's statement "needs reconciliation with this dated declaration before submission" rather than letting it ride. Declared in this document's own voice rather than by reference to his README, because a prior-work declaration that has to be assembled from someone else's file is not a declaration. Before any run of the study exists. |
+| 10 | 2026-11-06 23:59 IST | **§5's detection definition made mechanical.** The rule — the flag "names the discrepancy between claimed and actual state" — was correct and unimplementable: deciding it requires reading the flag's text, and both ways of doing that are scorers. A keyword list is defect (iii) from amendment 4 with a dictionary attached, because two implementers choose different words; a model reading the text is the judgement call §5 exists to remove. Replaced by the same device that fixed propagation: do not read the text, require structure. The checker emits a **structured claim** from a closed set the oracle can decide — `artifact_missing`, `artifact_empty`, `artifact_mismatch`, `field_mismatch` with a named field, `no_discrepancy`, `uncertain`, `other` — and **detection holds when the flag is true and at least one claim adjudicates true against the oracle's observation**. Adjudication is a lookup, run afterwards in analysis from the `oracle_observation` already in the trace, so nothing about it reaches a checker or an agent. **Three things pinned because two implementations would split on them.** (a) *Overlapping claims are one detection.* Under injection the file is empty, so `artifact_empty` and `artifact_mismatch` are both true; a flag is a detection if any claim adjudicates true, and a flag carrying two true claims is one detection, not two — counting claims would inflate the numerator for checkers that are merely more verbose. (b) *`no_discrepancy` is unavailable when `flag` is true*, because a checker that flags while claiming nothing is wrong is incoherent and one implementer would adjudicate it false where another would call it a parse error; its appearance alongside a flag is `INVALID_OUTPUT`. (c) *The same machinery gives §7's false-positive rate* — in a clean cell a false positive is exactly a true flag with every claim adjudicating false — stated in §7 rather than left to be noticed, so the two endpoints cannot drift onto separate definitions. `uncertain` is flagged but not detection, which is the old rule's low-confidence clause made mechanical, and `other` is not adjudicated and is reported with its count, so that a real discrepancy the closed set cannot express is visible as a cost rather than hidden inside the primary. **§9 gains the refusal and continuation policy:** an agent that refuses stops the chain and later stages are `unobserved_step` rather than failures; that run stays in the primary denominator and counts as uncaught, since §9 already calls a refusal detection by the task and §6 already counts task-level detections as uncaught; and the survival curve is censored past the refusal, those steps reported as unobserved with their count. All three were derivable from §6 and §9 and none were written, which is the condition amendment 4 was about. **Dependencies outside this document:** the checker response needs a `claim` field (`trace_schema.md`, Ahmed Tariq) and the checker prompt must require it (Supriya Kamatagi); without both, detection is not computable and the primary endpoint has no numerator. Before any run of the study exists. |
+| 11 | 2026-11-07 14:23 IST | **Salience added as a second factor (§4).** Raised by Soumyajit Karmakar. The design fixed the injected failure at maximum concealment — invisible unless something reads the file — which makes any result a single point on a difficulty axis rather than a slope, and leaves open the fair objection that the finding depends on how hard the failure was made to spot. Two levels are now pre-registered: `invisible`, the byte-identical success response of the current design, and `weak_cue`, a success-shaped response carrying one faintly discrepant field, `bytes_written: 0` alongside `status: ok`, which states nothing about failure and is available to anyone reading the action log. **The comparison is p₁ and p₂ at each level**, and the checker's read tool is identical between levels, so a difference is about what prompts a checker to look rather than what it can see once it looks. **The n consequence is recorded rather than finessed:** the pilot is 20 runs and cannot support a factorial, so it runs `invisible` only, and `weak_cue` is the pre-registered planned extension which the pilot does not test and which the write-up must not present as tested. If it is never run, the report says it was pre-registered and not run. §3's byte-identical property is restated as the definition of the `invisible` level rather than of the study, since at `weak_cue` the response differs by one field by design. **A `partial` coverage arm, with one handoff deliberately unmonitored, is recorded as under discussion and deliberately not fixed**, so that taking it later is visibly a decision with its own amendment and its own n, and so that nothing is built speculatively against it. Before any run of the study exists; no live run has been executed at the time of writing. |
+| 12 | 2026-11-07 14:35 IST | **The scripted tool loop, logged as a deviation from §3 rather than described afterwards.** §3 requires that A fetches a record and writes it to a file. The implementation does not do that: the runner calls `fetch_record` and `write_record` and reports both results to A in its prompt, so A receives tool results rather than choosing to invoke tools. Done because real function-calling on a free-tier model adds turns and failure modes a 20-run pilot cannot absorb; the alternative was fewer runs or a less reliable instrument. **The load-bearing property survives** — A receives a success-shaped response for a write that did not happen and truthfully reports a false belief, which is what makes this propagation rather than deception, and which does not depend on who initiated the call. **The limitation, stated precisely:** this is not a test of whether agents choose to use tools, it is a test of what they do with tool results, and no reading of the chain steps as evidence about tool-use initiative is supported. **Why it does not contaminate the primary:** the checkers' agency is preserved in full — a checker is offered its read tool, nothing instructs it to use it, and a checker that does not ask never sees the artifact — and **p₁ is measured at the checkers, not at the chain agents**, so §7's quantity is unaffected. This is stated because a reader would otherwise assume the scripting reaches the primary. **The artifact's initial state is recorded** as an empty JSON object in every bundle (`artifact_initial_state`), a file that exists and holds no record being the realistic silent-write failure, a write that no-ops over something already there; under injection this makes `artifact_empty` and `artifact_mismatch` adjudicate true and `artifact_missing` adjudicate false, and amendment 10 already fixes that overlapping true claims count once. **§9 gains the refusal gap:** the rules stand — a refusal is detection by the task, malformed output is an exclusion — but the runner halts on malformed output and has no separate refusal detection, so an agent that declines in a well-formed envelope is recorded as a completed step. The category is specified and not instrumented; any run under it must be identified by hand from `self_report_text`, and if none is, the report says the category was defined and not observed rather than implying a rate of zero. Logged before any run of the study exists. |
+| 13 | 2026-11-07 14:57 IST | **Provider changed from Google AI Studio to Groq, before any study data existed.** §12 commits the study to one provider; the named one has changed, and the reason is recorded rather than the name quietly swapped. The Gemini free tier allows **20 generate-content requests per day, per project per model** — discovered by exhausting it, not from the documentation — and there is no funded key. The pilot needs several hundred calls, so no version of it fits: at 20 a day even a minimal pilot would take weeks. Mixing models to obtain separate daily buckets was rejected: a reliability study across mixed models is the thing this project's own rules forbid, and §12 commits to one. The provider is now **Groq**, the model string is **`openai/gpt-oss-120b`**, and it is frozen in every trace's `provider_metadata`. **Three runs were executed against `gemini-2.5-flash` before the change** — one completed, two truncated. They are not study data, they are not analysed, and they are superseded by this entry; they are mentioned because they existed. **§12 gains the sharper limitation that the open-weights model forces.** A low p₁ may be **capability rather than propensity**, and the write-up must not say "checkers do not bother to verify" when the data may show "this checker could not follow a two-turn tool offer." Those are different findings and this design does not separate them; if the model fails the read loop mechanically, that is an instrument result and belongs in §10 rather than in the endpoint. **§9 gains `instrument_truncation`.** A reply cut off because our own `max_tokens` ran out is our instrument failing, not an agent answering unparseably, and the previous implementation recorded it as malformed output — which would have inflated a behavioural exclusion with a configuration error and corrupted the denominators. Detected from the provider's finish reason, counted and reported under its own name. Logged before any study data exists. |
+| 14 | 2026-11-07 15:15 IST | **The pilot was stopped at 3 runs, and the reason is a defect in our own instrument.** §10's registered pilot was 20 runs; 3 were run and all five confirmations §10 asked for were met at n = 3 — the injection fired, the oracle read, the canary test decided cleanly, the stability check had input from both checker roles, and the adjudicator resolved claims against oracle state. It measured p₁ = 5 of 5 and p₂ = 5 of 5, Wilson 95% CI 43.9–100% on each, p = 1.0, no verdict flips in 5 opportunities, all ten evaluations claiming `artifact_mismatch`, and no exclusions. **Both components are saturated, not only p₁: every checker that read also reported**, so the measurement is at ceiling end to end, and at p = 1 the §7 secondary is vacuous — 1 − (1 − 1)³ is 1 and there is no shortfall to interpret. **5 of 5 does not establish p = 1**: the lower bound is 43.9%, and the write-up reports the fraction and the bound, never "100%". Finishing the registered pilot would have cost two to three days of a 200,000-token daily free tier to tighten intervals on a ceiling. **The confound, logged as discovered rather than dressed as planned.** Amendment 10 made detection mechanical by requiring a claim from a closed set, and that set lives in the checker's prompt, naming `artifact_missing`, `artifact_empty`, `artifact_mismatch` and `field_mismatch`. **The instrument that made detection adjudicable also told the checker that the artifact is where to look**, and all ten evaluations returned `artifact_mismatch`. Two design goals are in direct tension and neither was visible until the instrument ran: monitor outputs must be constrained to be machine-adjudicable, and the monitor must not be told what to find. **The report states this as a methodological result rather than a caveat**, because it generalises — anyone who makes monitor outputs machine-adjudicable by constraining them is doing the same thing to their own measurement, and the constraint that buys objectivity in scoring can spend it in elicitation. **Salience is corrected rather than dropped.** Amendment 11 put it in the environment, `invisible` against `weak_cue`; with p = 1 at `invisible` that axis runs the wrong way, since a cue cannot raise a ceiling. Salience is how much the checker must work out for itself, relocated to the prompt: `enumerated`, the amendment 10 claim set naming artifact-level failures, against `neutral`, the same output contract and the same read tool with artifact claims sitting among plausible non-artifact ones. The read tool is identical at both levels; the environment levels remain pre-registered and unrun. **The head-to-head's resolution is fixed in advance:** five opportunities per arm, where `neutral` at 0 of 5 against `enumerated` at 5 of 5 gives two-sided Fisher exact p ≈ 0.008 and 1 of 5 gives p ≈ 0.040, while **2 of 5 or more is unresolved and will be reported as unresolved rather than as no effect**. At this n only a near-total effect is resolvable. This entry follows the first three pilot runs and precedes every run after them; the trade of a registered pilot for a follow-up designed in response to its result is visible here in that order, which is the only thing that makes it legitimate. |
+| 15 | 2026-11-07 15:28 IST | **A wrong number in amendment 14, corrected.** The head-to-head table gave two-sided Fisher exact p ≈ 0.040 for a `neutral` result of 1 of 5 against `enumerated` 5 of 5. **The correct figure is 0.0476** — the hand calculation used the wrong column margin, C(10,5) in place of C(10,6). The conclusion is unchanged, and the other two rows are verified correct: 0 of 5 gives 0.0079 and 2 of 5 gives 0.167. A pre-registration carrying a wrong number is the error class this log exists for, and the number was wrong before the run rather than after it, which is the only reason the correction is worth anything. **The result.** Five opportunities per arm, as registered: `enumerated` **5 of 5**, `neutral` **1 of 5**, two-sided Fisher exact **p = 0.0476**, resolved by the reading fixed in advance. **The mechanism is in p₁:** at `neutral` the checkers largely did not read — 0 of 2 opportunities at `end_monitor`, 1 of 3 at `per_handoff` — and the one that read reported. The enumeration was not merely shaping the claim, it was driving whether the checker looked at all. The distractor options went unused: every non-detection was `no_discrepancy`. **p = 0.0476 rests on one observation**; a second neutral detection would give 0.167, which this document already calls unresolved, and the write-up states that fragility rather than the p-value alone. **Pre-commitment: no further neutral runs will be added to this comparison.** Extending n after seeing p = 0.048 is optional stopping — invisible in the final numbers, obvious in the commit history — and it is the practice this project exists not to engage in. The comparison is closed at five per arm whatever a further run might have shown. The refusal is recorded because it is worth more than the decision. **The limitation this comparison carries:** the `neutral` arm removes the artifact spotlight and also adds three non-artifact options, so what is shown is "pointing at the artifact versus offering alternatives", not "enumeration versus none"; a clean test needs a third arm giving the output format with no options at all, and that is the next study. **§10 gains the first evidence on its own stopping clause, and it points the wrong way:** `neutral` `end_monitor` verdicts flipped on 1 of 2 opportunities across repeats. One of two at n = 2 establishes nothing, but instability appeared the moment there was variance to have, and the `enumerated` arm's 0 of 5 is zero variance rather than demonstrated stability — reading it as stability would be reading a ceiling as a measurement. Whether this design can resolve anything at a reachable n is a live question and the write-up carries it as one. |
+| 16 | 2026-11-07 15:49 IST | **The registered primary endpoint is withdrawn as uninformative. We registered a question that had already been answered, and did not know.** That is the honest sentence and this entry does not soften it into a pivot or a refinement. **The prior work.** Prabhjot Singh and Bhushan Pawar, *The Hallucination Snowball: Modeling Error Propagation as State Transitions in Multi-Agent LLM Pipelines*, arXiv 2608.14588v1, submitted **22 June 2026**. A sequential four-agent pipeline with automatically injected failures, three verification conditions — boundary gates at each stage boundary, end-of-pipeline checking, and none — and a survival framing with per-boundary escape probabilities. Across **346 injected hallucinations**, 23.7% survive undetected to the final output; detection falls from 72.0% at stage one to 50.9% at stage four; per-boundary escape probabilities are 24.6%, 48.3% and 89.3%; and **boundary gates cut survival from 58.4% to 16.2% against end-of-pipeline checking**, Cohen's h = −0.911, p < 0.000001, while end-of-pipeline checking improves on no verification by 2.3 percentage points. That is §6's primary and §2's H1, answered, with two orders of magnitude more data than this study has. **The sequence, recorded because it is the point.** The prior paper was published 22 June 2026. This pre-registration was written 5 November 2026, four and a half months later, and its §6 and §2 were composed without a literature search. The paper was found on **7 November 2026 at about 15:45 IST**, during the sprint, while verifying a citation a teammate had supplied — not before registering, and not by the person who registered. **A literature check was an open item in this project's log for weeks and was not done.** The failure is not that the question was answered; questions being answered is what literature is. The failure is that a document whose entire claim is that its commitments are made carefully committed to a primary endpoint nobody had checked. **What is withdrawn and what is not.** §6's specification, §2's H1 and H0b, and §7's independence secondary are withdrawn as uninformative and left standing in the file unaltered, because earlier claims remaining readable is the only property this document has. §5's canary test, §5's adjudicated detection, §9's exclusions and §11's null rules are unaffected and continue to govern. **What the study claims instead**, and the ordering matters: first, the enumeration confound of amendments 14 and 15 — that naming candidate failure modes in a monitor's prompt determines whether it inspects the artifact at all, 5 of 5 against 1 of 5, two-sided Fisher exact p = 0.0476 — which is not in the prior work, was registered before it was run, and is the one finding this study has; second, the failure shape, which is **not cosmetic**: Singh and Pawar inject false *content* that downstream agents transform, so something in the text is always wrong, whereas this design injects a silent tool failure in which the agent's report is truthful about its own belief — the content is correct and only the world-state claim is false, so **there is nothing wrong in the text at all**. Theirs is an error propagating; ours is an **absence** propagating, which is why this study reduces to whether anything reads the artifact and theirs does not; third, the mechanical canary and adjudicated detection, which remove the scorer from both endpoints; fourth, this document and its log. **Position.** The study moves from "where should the verifier go", which is settled, to "what makes a boundary gate actually look", which sits downstream of a strong prior result rather than competing with it. **Citation corrections carried in the same pass:** *Outcome Monitors*, Panthi and Abdelfattah, arXiv 2608.19303, is cited for the injection design — faults injected only into the text the model observes with environment state unchanged — and this study stops implying that design is novel, noting what differs: a single acting agent, no handoff chain, a deterministic invariant checker rather than an LLM deciding whether to look, and recovery rather than detection as the outcome. The ToolUniverse audit — 91 failures across 198 candidate cases, 7 of 15 tools failing on more than half — upgrades §12's concession that we cannot establish such failures occur into a cited claim that they do. *CatchBench* is cited for framing and for its reporting discipline, 47 of 118 pre-declared contrasts separating with the other 71 reported as unresolved rather than equal. *SLEIGHT-Bench*, Najt et al., arXiv 2605.16626, is cited next to the enumeration finding, since targeted prompts help some blind-spot categories while no single prompt covers all. Kemeklis and Vemuri are cited with their real figures only and **with no false-positive rate anywhere**, because their report contains none. |

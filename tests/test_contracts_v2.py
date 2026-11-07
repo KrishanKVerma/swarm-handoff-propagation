@@ -157,13 +157,13 @@ class PropagationV2Tests(unittest.TestCase):
         self.assertTrue(result["canary_in_inherited"])
         self.assertFalse(result["canary_in_asserted"])
 
-    def test_exact_value_matching_ignores_keys_case_and_substrings(self):
+    def test_a8_containment_ignores_keys_and_preserves_exact_token_case(self):
         for asserted in ({TOKEN: "key only"}, {"code": TOKEN.lower()},
-                         {"code": TOKEN[:-1]}, {"code": "prefix " + TOKEN}, {"code": None}):
+                         {"code": TOKEN[:-1]}, {"code": None}):
             with self.subTest(asserted=asserted):
                 result = self.score(step(asserted=asserted))
                 self.assertEqual(result["verdict"], "NOT_PROPAGATED")
-        nested = self.score(step(asserted={"records": [{"reference_code": TOKEN}]}))
+        nested = self.score(step(asserted={"records": [{"reference_code": "prefix " + TOKEN + " suffix"}]}))
         self.assertEqual(nested["verdict"], "PROPAGATED")
 
     def test_invalid_c_or_output_is_never_scored_as_missing_canary(self):

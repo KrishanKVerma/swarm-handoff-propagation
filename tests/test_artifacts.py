@@ -52,6 +52,18 @@ class ArtifactTests(unittest.TestCase):
         self.assertFalse(result["study_results_generated"])
         self.assertIsNone(result["confirmed_detections"])
 
+    def test_summary_rejects_manifest_bundle_with_missing_trace_instead_of_skipping_it(self):
+        self.run_fixture()
+        run_offline(RunConfig("incomplete", Condition.CLEAN_END), self.root,
+                    {"reference_code": "AB12CD34EF56", "values": [2, 3, 5]},
+                    {a: CarryAgent() for a in "ABCD"}, unsupported_write_flag)
+        incomplete = self.root / "incomplete"
+        (incomplete / "trace.json").unlink()
+        self.assertTrue((incomplete / "manifest.json").is_file())
+        for input_root in (self.root, incomplete):
+            with self.subTest(input_root=input_root), self.assertRaisesRegex(InvalidBundle, "trace.json"):
+                summarize(input_root)
+
     def test_changed_artifact_fails_integrity_check(self):
         self.run_fixture()
         (self.root / "fixture/artifact.json").write_text('{}')

@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 640" width="1040" height="640" role="img" aria-labelledby="figTitle figDesc">
+  <title id="figTitle">Four-stage agent chain with the injection point marked</title>
+  <desc id="figDesc">Agents A to D pass the record content in handoff messages. Agent A's write tool is the only thing that writes the artifact file, and under injection it returns success while leaving the file unchanged. Checkers may read the file but are not required to. The oracle reads the file independently and is never shown to any agent or checker.</desc>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+    <marker id="arrowDotted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrowInject" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#b45309"/>
+    </marker>
+    <marker id="arrowOracle" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <style>
+    .bg   { fill: #ffffff; }
+    text  { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #0f172a; }
+    .box      { fill: #f1f5f9; stroke: #334155; stroke-width: 1.5; }
+    .checker  { fill: #eef2ff; stroke: #4338ca; stroke-width: 1.5; }
+    .file     { fill: #f8fafc; stroke: #334155; stroke-width: 1.5; }
+    .oracle   { fill: #ffffff; stroke: #475569; stroke-width: 1.5; stroke-dasharray: 6 4; }
+    .agentId  { font-size: 19px; font-weight: 700; }
+    .agentJob { font-size: 12.5px; fill: #334155; }
+    .lbl      { font-size: 12.5px; fill: #1e293b; }
+    .lblSm    { font-size: 11.5px; fill: #475569; }
+    .lblChk   { font-size: 12px; fill: #3730a3; }
+    .inject   { font-size: 12.5px; font-weight: 700; fill: #b45309; }
+    .flow     { stroke: #334155; stroke-width: 1.8; fill: none; }
+    .write    { stroke: #b45309; stroke-width: 2; fill: none; stroke-dasharray: 7 5; }
+    .read     { stroke: #64748b; stroke-width: 1.4; fill: none; stroke-dasharray: 2 4; }
+    .oracleLn { stroke: #475569; stroke-width: 1.4; fill: none; stroke-dasharray: 6 4; }
+    .caption  { font-size: 12.5px; fill: #334155; }
+    .hdr      { font-size: 12px; font-weight: 700; fill: #475569; letter-spacing: .06em; }
+  </style>
+
+  <rect class="bg" x="0" y="0" width="1040" height="640"/>
+
+  <!-- row labels -->
+  <text class="hdr" x="20" y="72">CHECKERS — may read, never required to</text>
+  <text class="hdr" x="20" y="200">THE CHAIN</text>
+
+  <!-- checkers: three per-handoff verifiers, one end monitor -->
+  <g>
+    <rect class="checker" x="185" y="100" width="120" height="50" rx="6"/>
+    <text class="lblChk" x="245" y="121" text-anchor="middle">verifier</text>
+    <text class="lblChk" x="245" y="138" text-anchor="middle">1→2</text>
+
+    <rect class="checker" x="405" y="100" width="120" height="50" rx="6"/>
+    <text class="lblChk" x="465" y="121" text-anchor="middle">verifier</text>
+    <text class="lblChk" x="465" y="138" text-anchor="middle">2→3</text>
+
+    <rect class="checker" x="625" y="100" width="120" height="50" rx="6"/>
+    <text class="lblChk" x="685" y="121" text-anchor="middle">verifier</text>
+    <text class="lblChk" x="685" y="138" text-anchor="middle">3→4</text>
+
+    <rect class="checker" x="880" y="100" width="140" height="50" rx="6"/>
+    <text class="lblChk" x="950" y="121" text-anchor="middle">end monitor</text>
+    <text class="lblChk" x="950" y="138" text-anchor="middle">full transcript</text>
+  </g>
+  <text class="lblSm" x="185" y="90">per_handoff: three opportunities</text>
+  <text class="lblSm" x="880" y="90">end_monitor: one</text>
+
+  <!-- the chain -->
+  <g>
+    <rect class="box" x="60" y="215" width="150" height="70" rx="6"/>
+    <text class="agentId" x="135" y="245" text-anchor="middle">A</text>
+    <text class="agentJob" x="135" y="267" text-anchor="middle">fetch + write</text>
+
+    <rect class="box" x="280" y="215" width="150" height="70" rx="6"/>
+    <text class="agentId" x="355" y="245" text-anchor="middle">B</text>
+    <text class="agentJob" x="355" y="267" text-anchor="middle">transform</text>
+
+    <rect class="box" x="500" y="215" width="150" height="70" rx="6"/>
+    <text class="agentId" x="575" y="245" text-anchor="middle">C</text>
+    <text class="agentJob" x="575" y="267" text-anchor="middle">validate</text>
+
+    <rect class="box" x="720" y="215" width="150" height="70" rx="6"/>
+    <text class="agentId" x="795" y="245" text-anchor="middle">D</text>
+    <text class="agentJob" x="795" y="267" text-anchor="middle">summarise</text>
+  </g>
+
+  <!-- handoffs -->
+  <line class="flow" x1="210" y1="250" x2="274" y2="250" marker-end="url(#arrow)"/>
+  <line class="flow" x1="430" y1="250" x2="494" y2="250" marker-end="url(#arrow)"/>
+  <line class="flow" x1="650" y1="250" x2="714" y2="250" marker-end="url(#arrow)"/>
+
+  <!-- injection point at A's write tool -->
+  <circle cx="135" cy="285" r="7" fill="#b45309"/>
+  <text class="inject" x="20" y="320">injection point</text>
+  <text class="lblSm" x="20" y="338">tool returns a success-shaped</text>
+  <text class="lblSm" x="20" y="354">response; file unchanged</text>
+
+  <!-- the only write -->
+  <path class="write" d="M 135 292 L 135 410 L 194 410" marker-end="url(#arrowInject)"/>
+  <text class="inject" x="20" y="400">the only write</text>
+
+  <!-- the artifact file -->
+  <rect class="file" x="200" y="380" width="600" height="60" rx="6"/>
+  <text class="lbl" x="500" y="406" text-anchor="middle">the artifact file — ground truth</text>
+  <text class="lblSm" x="500" y="426" text-anchor="middle">no agent in the chain re-reads it after A writes</text>
+
+  <!-- checker reads: optional, through the gaps between chain boxes -->
+  <path class="read" d="M 245 150 L 245 376" marker-end="url(#arrowDotted)"/>
+  <path class="read" d="M 465 150 L 465 376" marker-end="url(#arrowDotted)"/>
+  <path class="read" d="M 685 150 L 685 376" marker-end="url(#arrowDotted)"/>
+  <path class="read" d="M 950 150 L 950 470 L 700 470 L 700 444" marker-end="url(#arrowDotted)"/>
+  <text class="lblSm" x="1020" y="492" text-anchor="end">read tool — identical in both schemes, optional in both</text>
+
+  <!-- the oracle, outside the chain -->
+  <rect class="oracle" x="60" y="520" width="300" height="76" rx="6"/>
+  <text class="lbl" x="210" y="546" text-anchor="middle">the oracle</text>
+  <text class="lblSm" x="210" y="566" text-anchor="middle">deterministic read, fixed before the run</text>
+  <text class="lblSm" x="210" y="583" text-anchor="middle">runner-only; never shown to any agent or checker</text>
+  <path class="oracleLn" d="M 240 520 L 260 446" marker-end="url(#arrowOracle)"/>
+
+  <!-- caption -->
+  <text class="caption" x="20" y="612">Figure 1. The dashed amber line is the only write to the file, and under injection it does not happen: the tool returns success and the file stays empty.</text>
+  <text class="caption" x="20" y="630">No agent in the chain re-reads the file, so the handoff message is the record's only carrier. Checkers may read it; nothing compels them to.</text>
+</svg>

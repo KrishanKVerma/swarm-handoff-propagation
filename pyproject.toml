@@ -5,12 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "swarm-handoff-runner"
 version = "0.1.0"
-description = "Offline runner and trace fixtures for the handoff study"
+description = "Offline fixtures and saved fixture/live trace replay for the handoff study"
 requires-python = ">=3.11"
 authors = [{name = "Ahmed Tariq"}]
 
 [project.scripts]
 swarm-handoff = "swarm_handoff.cli:main"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.setuptools]
+packages = ["swarm_handoff", "src", "analysis"]
+package-dir = { "swarm_handoff" = "src/swarm_handoff", "src" = "src", "analysis" = "analysis" }

@@ -2,10 +2,10 @@
 
 The runner writes one run record, four task-step records, checker opportunities
 and their evaluations. Ahmed owns the runner and trace format. This document
-describes the implemented `offline-fixture-0.2` contract, including Amendment 7.
-These are synthetic fixtures, not a frozen empirical trace or completed A2A
-integration. The preregistration governs the study; remaining implementation
-decisions are listed in [the runner notes](docs/offline-runner.md).
+describes the implemented `offline-fixture-0.2` contract, including Amendments 7
+and 8. These are synthetic fixtures. The separate live runner emits `live-0.2`;
+its saved-record differences and replay commands are documented in
+[live replay](docs/live-replay.md). The preregistration governs the study.
 
 ## Run record
 
@@ -92,10 +92,12 @@ Unexecuted evaluations retain null read indicators.
 
 ## Propagation annotation
 
-For observed injected B, C and D outputs, an explicit `FixtureScoring` policy
-matches the exact token against string values recursively, not keys, substrings
-or case-normalized text. This matcher is a fixture convention pending agreement
-for live use. It records `canary_received` from actual input values,
+For observed injected B, C and D outputs, new `FixtureScoring` policies record
+`canary_rule=contained_string_values`: the exact token may occur anywhere inside
+recursive string values, including list elements. Object keys, case folding and
+type coercion do not count. This is Amendment 8 containment. Archived policies
+with `exact_string_values`, or without a rule field, retain whole-value equality;
+replay never upgrades their meaning. It records `canary_received` from actual input values,
 `canary_in_asserted`, `canary_in_inherited` and `c_pass` separately, then emits:
 
 | `verdict` | Rule | `propagated` |
