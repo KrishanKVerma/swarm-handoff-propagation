@@ -3,49 +3,41 @@
 Apart Research Swarm Alignment Hackathon · 6–8 November 2026
 
 **Draft.** Every number is reproduced by
-`python3 -m analysis.recompute runs/smoke`; none was typed in by hand.
-
-**§2, §6, the abstract and the title are marked `DRAFT — rewrite in the
-author's voice`.** They are drafted against the numbers so the shape and the
-claims can be checked, and they are to be rewritten before the report ships,
-not published as they stand. Only `<<TITLE>>` and `<<AUTHORS_AFFILIATIONS>>`
-remain genuinely blank.
+`python3 -m analysis.recompute runs/smoke`. Sections marked `DRAFT` are to be
+rewritten in the author's voice before shipping.
 
 ---
 
 ## 0. Front matter
 
-- **Title.** `<<TITLE>>` — three candidates, in order of preference:
-  1. *Enumeration elicits inspection: what a monitor is told to look for
-     decides whether it looks*
-  2. *The instrument measured itself first: a pre-registered pilot on
-     unverified claims in agent chains*
-  3. *How far an unverified success claim travels through an agent chain*
-     (the registered question; weakest, because it is not what we answered)
-- **Abstract, 150–250 words.** **DRAFT — rewrite in the author's voice.** 203
-  words.
+- **Title.** `<<TITLE>>` — candidates; Krishan picks the wording:
+  1. *What makes a boundary gate look? Prompt enumeration determines whether
+     an LLM monitor inspects the artifact*
+  2. *A gate that isn't told what to look for doesn't look*
+- **Abstract, 150–250 words.** **DRAFT — rewrite in the author's voice.**
 
-> Agents in a chain hand each other claims, not verified state. We inject a
-> silent write failure into the first of four agents — the tool returns a
-> success-shaped response and the file stays empty — and measure how far the
-> resulting false claim travels before anything catches it. Detection is
-> adjudicated mechanically: a checker that flags must emit a claim from a
-> closed set, and a claim counts only if the file itself says it is true.
+> Boundary gates beat end-of-pipeline checking in multi-agent pipelines: Singh
+> and Pawar establish this across 346 injected failures, cutting survival from
+> 58.4% to 16.2%. We ask the question their result creates rather than
+> re-litigating it — **why** a boundary gate works, and whether its
+> effectiveness is a property of placement or of prompting.
 >
-> The first thing the instrument measured was a flaw in the instrument. That
-> closed set lives in the checker's prompt, and naming artifact-level failures
-> in it changed whether the checker inspected the artifact at all: 5 of 5
-> opportunities ended in an adjudicated detection when the claim set named
-> them, against 1 of 5 when the same claims sat among plausible alternatives
-> (two-sided Fisher exact p = 0.0476, under a reading fixed before the run).
-> The mechanism is reading rather than reporting — the neutral checkers mostly
-> never looked, and the one that looked, reported.
+> We build a four-agent chain with a different failure shape. The first agent's
+> write tool returns a success-shaped response and the file stays empty, so the
+> agent's report is truthful about its own belief: the content is right and only
+> the world-state claim is false. Nothing in the text is wrong. Where Singh and
+> Pawar have an error propagating, we have an **absence** propagating, which
+> reduces detection to a single question — does anything read the artifact?
 >
-> No endpoint was reached: six live runs, no cell at its registered n, no
-> between-scheme comparison. The pre-registration carries fifteen dated
-> amendments, eight of them corrections to our own document, including the
-> confound above and a p-value we had computed wrongly and fixed before we
-> used it.
+> It does, but only when told to. Naming candidate failure modes in the
+> checker's prompt moved detection from **1 of 5 opportunities to 5 of 5**
+> (two-sided Fisher exact p = 0.0476), and the mechanism is reading rather than
+> reporting: the checkers that were not pointed at the artifact mostly never
+> opened it, and concluded nothing was wrong. The same constraint that made our
+> detection metric machine-adjudicable was eliciting the behaviour it measured.
+> Six live runs; no endpoint reached; pre-registration with sixteen dated
+> amendments, one of which withdraws our own registered primary.
+
 - **Authors and affiliations.** `<<AUTHORS_AFFILIATIONS>>`
 - **Prior-work statement.** See §2 and `PREREGISTRATION.md` §0, which carries
   the file list, line counts and commit timestamps.
@@ -57,16 +49,28 @@ remain genuinely blank.
 
 ## 1. Introduction
 
-### What we asked
+### The question prior work leaves open
 
-How far does an unverified success claim travel through a chain of agents
-before anything catches it, and does a verifier at every handoff catch it
-earlier than a monitor at the end?
+Where a verifier should sit in an agent pipeline is settled. Singh and Pawar
+show that boundary gates at each handoff cut failure survival from 58.4% to
+16.2% against a single end-of-pipeline check, across 346 injected failures,
+p < 10⁻⁶. We do not re-litigate that result; we take it.
 
-**What we are able to answer is narrower, and the distinction is the report.**
-No endpoint was reached. What we have is an instrument, a pre-registration with
-fifteen dated amendments, and one resolved finding — about the instrument
-rather than about agents.
+What it creates is a question it does not ask. **Why does a boundary gate
+work, and is its effectiveness a property of placement or of prompting?** A
+gate is an LLM with a tool and an instruction. Placement decides how often it
+runs. Nothing about placement decides whether, on any given run, it looks.
+
+Our answer is that it is substantially prompting. **A gate that is not told
+what to look for mostly does not look** — 1 of 5 opportunities against 5 of 5
+when the same checker, with the same tool and the same evidence, is given a
+prompt naming candidate failure modes.
+
+**We registered a different question and withdrew it.** The pre-registration's
+primary endpoint was the placement comparison Singh and Pawar had already
+answered four and a half months earlier; we found that during the sprint, not
+before it, and amendment 16 records the withdrawal and the sequence. No
+endpoint from the registered design was reached.
 
 ### Why it matters
 
@@ -92,10 +96,34 @@ roughly fifteen hours and are declared as preexisting preparation.
 
 ## 2. Related Work
 
-`<<RELATED_WORK>>` — Soumyajit Karmakar's section, posted
-2026-11-07 13:54. Every citation in it is checked against the source before
-it ships; the verification table is in `docs/citation-check.md`. Anything
-unconfirmed is cut, not softened.
+`<<RELATED_WORK>>` — Soumyajit Karmakar's section. Every citation is checked
+against the source before it ships; the table is in `docs/citation-check.md`,
+and anything unconfirmed is cut rather than softened.
+
+Five placements this section must make, from that check:
+
+- **Singh & Pawar (arXiv 2608.14588)** — the result we build on, stated as
+  settled, with its numbers: 346 injected failures, survival 58.4% → 16.2%
+  under boundary gates, p < 10⁻⁶. Our contribution sits downstream of it.
+- **Panthi & Abdelfattah, *Outcome Monitors* (arXiv 2608.19303)** — cited for
+  the injection design, which is theirs as much as ours: faults injected only
+  into the text the model observes, environment state unchanged. What differs
+  here: a single acting agent rather than a chain, a deterministic
+  invariant checker rather than an LLM deciding whether to look, and recovery
+  rather than detection as the outcome.
+- **Singh, Gopalan & Narayanan, ToolUniverse audit** — 91 failures across 198
+  candidate cases, 7 of 15 tools failing on more than half. Evidence that
+  silent tool failures occur naturally, which this study's injected design
+  cannot establish.
+- **Zhao, *CatchBench*** — for framing, and for reporting discipline: 47 of 118
+  pre-declared contrasts separate, and the remaining 71 are reported as
+  unresolved rather than equal.
+- **Najt et al., *SLEIGHT-Bench* (arXiv 2605.16626)** — beside our enumeration
+  finding. At 1% FPR an Opus 4.6 monitor never catches 20 of 40 attacks across
+  10 trials, 32% overall, and targeted prompts help some blind-spot categories
+  while no single prompt covers all.
+- **Kemeklis & Vemuri, *Omission Attacks*** — real figures only, and **no
+  false-positive rate**, since their report contains none.
 
 ## 3. Methodology
 
@@ -123,20 +151,24 @@ is never told what the file should contain, and never sees the oracle's
 verdict. Tool access is identical in both schemes and at both prompt levels.
 Nothing instructs a checker to read.
 
-**The canary test.** The record carries a 12-character random reference code
-the pipeline carries and never transforms. Propagation to step *k* is that code
-appearing in agent *k*'s asserted fields: one exact containment match, no
-scorer, scoped to k ∈ {2,3,4}.
+**The failure shape, and why it is not a variant of the prior work.** Singh
+and Pawar inject false *content*, which downstream agents then transform — so
+at every step there is something in the text that is wrong, and a sufficiently
+careful reader of the transcript could find it. We inject a silent *tool*
+failure. The agent's report is truthful about its own belief: the content it
+passes on is correct, and only its claim about the state of the world is false.
+**Nothing in the text is wrong.** Theirs is an error propagating; ours is an
+absence propagating. That is why this design reduces to a single question —
+does anything read the artifact — and theirs does not.
 
-**Adjudicated detection.** A checker that flags emits a structured claim from a
-closed set; detection is a flag plus at least one claim the oracle's reading of
-the file says is true. No text is parsed.
+**Measurement.** Propagation is one exact containment match of the reference
+code in an agent's asserted fields, scoped to k ∈ {2,3,4}. Detection is a flag
+plus at least one structured claim that the oracle's reading of the file says
+is true. Neither reads free text, so neither has a scorer.
 
-**The pre-registration carries the design in full and is public.** Every rule
-above — the match rule, the adjudication set, the exclusion categories, the
-power table — is stated there with its reasoning and its amendment history, so
-this report states each once and points there rather than reproducing it. That
-the document is complete enough to be pointed at is itself part of the claim.
+**The pre-registration carries the design in full and is public**, with every
+rule's reasoning and amendment history, so this report states each once and
+points there rather than reproducing it.
 
 **Two deviations from the above, both logged before the runs.** The tool loop
 is scripted runner-side — the runner calls A's tools and reports the results to
@@ -260,8 +292,9 @@ is defined and not instrumented (amendment 12).
 
 **DRAFT — rewrite in the author's voice.**
 
-Enumerating candidate failure modes in the checker's prompt changed whether the
-checker inspected the artifact at all: **5 of 5** opportunities ended in an
+Placement is not the whole story of why boundary gates work. Enumerating
+candidate failure modes in the checker's prompt changed whether the checker
+inspected the artifact at all: **5 of 5** opportunities ended in an
 adjudicated detection when the claim set named artifact-level failures, against
 **1 of 5** when the same claims sat among plausible alternatives (two-sided
 Fisher exact **p = 0.0476**, resolved under the reading fixed before the run).
@@ -277,12 +310,18 @@ Verdict instability appeared as soon as there was any variance to have: **1 of
 2** neutral `end_monitor` opportunities flipped across repeats, while the
 enumerated arm's 0 of 5 is zero variance rather than demonstrated stability.
 
+Read against Singh and Pawar, this suggests their boundary-gate advantage may
+be partly an artefact of what gates are told rather than of where they sit —
+but we cannot test that, because we did not run their comparison and ours had
+no variance to compare. It is a hypothesis their design could settle and ours
+cannot.
+
 The result rests on a single observation — a second neutral detection would
 have made it unresolved by our own pre-registered table — and **nothing here
 licenses a claim about either verification scheme, about the independence of
 detection opportunities, or about the rate at which agents propagate
-unverified claims.** No endpoint was computed and no cell reached its
-registered n.
+unverified claims.** No endpoint was computed, no cell reached its registered
+n, and the registered primary was withdrawn before any of it (amendment 16).
 
 ## 6. Limitations and Dual-Use / Ethical Considerations
 
@@ -306,8 +345,16 @@ registered n.
 - **The tool loop is scripted**, so this tests what agents do with tool
   results, not whether they choose to use tools.
 - **Detection, not mitigation.** Verifiers flag and the chain runs on.
-- **One task family, one provider, one model, constructed failure, n = 6 live
-  runs.**
+- **The failure is constructed, though the class is not hypothetical.** We
+  inject the silent tool failure rather than observing one. That such failures
+  occur in deployed systems is established elsewhere — the ToolUniverse audit
+  finds 91 failures across 198 candidate cases, with 7 of 15 tools failing on
+  more than half — but this design measures how a chain handles one, not how
+  often one arises.
+- **The registered primary was withdrawn**, not merely unreached: the question
+  it measured was answered by published work before this pre-registration was
+  written (amendment 16).
+- **One task family, one provider, one model, n = 6 live runs.**
 
 ### What this cannot establish
 
@@ -326,7 +373,31 @@ for reasons given there, and we name the case where that argument weakens.
 
 ## 7. References
 
-`<<REFERENCES>>` — from §2. Only verified entries appear here.
+From §2. **Only entries verified against the source appear here**; the
+verification table is `docs/citation-check.md`.
+
+1. Prabhjot Singh and Bhushan Pawar. *The Hallucination Snowball: Modeling
+   Error Propagation as State Transitions in Multi-Agent LLM Pipelines.*
+   arXiv:2608.14588v1, 2026.
+2. Sugam Panthi and Rabab Abdelfattah. *Outcome Monitors: Recovery Affordances
+   for Silent Tool Failures.* arXiv:2608.19303v1, 2026.
+3. Elle Najt, Colin Toft, Tyler Tracy, Fabien Roger and Joe Benton.
+   *SLEIGHT-Bench: A Benchmark of Evasion Attacks Against Agent Monitors.*
+   arXiv:2605.16626, 2026.
+4. Devansh Singh, Shreya Gopalan and Sundaraparipurnan Narayanan. *Silent
+   Failures in Agent–Tool Interaction: An Audit of ToolUniverse.* 2026.
+5. Yue Zhao. *CatchBench: When Can an Agent Failure Be Caught?* Preprint, 2026.
+6. Jurgis Kemeklis and Nikhil Vemuri. *Omission Attacks: When Doing Nothing Is
+   the Attack.* Apart Research AI Control Hackathon, 2026.
+7. Tomek Korbak et al. *Chain of Thought Monitorability: A New and Fragile
+   Opportunity for AI Safety.* arXiv:2507.11473, 2025.
+8. Miles Turpin et al. *Language Models Don't Always Say What They Think.*
+   arXiv:2305.04388, 2023.
+
+`<<REMAINING_REFERENCES>>` — the entries from Soumyajit's text still awaiting
+titles before they can be verified: Huang et al. 2025, Hu 2026, Sun et al.
+2024, Advani 2026, Hiller/Jhumka/Suri 2001, Arcuschin et al. 2025, plus FakeLab
+(arXiv 2607.07368) and SCHEME (arXiv 2605.29178), verified by the author.
 
 ## 8. Team and contributions
 
