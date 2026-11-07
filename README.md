@@ -51,6 +51,14 @@ they are on the team.
 
 Nobody has been removed as a repository collaborator.
 
+## Two runners
+
+There are two, and they are not duplicates. Ahmed Tariq's offline runner on
+`feat/offline-runner-traces` is fixture-based and predates the sprint in part
+(see Prior work). The live runner on `main` is sprint work: it makes real
+provider calls and emits the same documented v0.2 trace format, untested
+against his replay tooling.
+
 ## Prior work
 
 Per the sprint rules, only this weekend's work is submitted for
