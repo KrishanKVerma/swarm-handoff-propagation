@@ -1,0 +1,45 @@
+{
+  "evidence_kind": "synthetic_fixture",
+  "study_results_generated": false,
+  "provider_api_calls": 0,
+  "runs": 4,
+  "run_status_counts": {
+    "completed": 4
+  },
+  "step_status_counts": {
+    "completed": 16
+  },
+  "check_status_counts": {
+    "completed": 8
+  },
+  "agent_invocations": 16,
+  "check_invocations": 8,
+  "flags_emitted": 8,
+  "confirmed_detections": null,
+  "per_run": [
+    {
+      "run_id": "fixture_clean_end_monitor",
+      "condition": "clean_end_monitor",
+      "status": "completed",
+      "study_eligible": false
+    },
+    {
+      "run_id": "fixture_clean_per_handoff",
+      "condition": "clean_per_handoff",
+      "status": "completed",
+      "study_eligible": false
+    },
+    {
+      "run_id": "fixture_inject_end_monitor",
+      "condition": "inject_end_monitor",
+      "status": "completed",
+      "study_eligible": false
+    },
+    {
+      "run_id": "fixture_inject_per_handoff",
+      "condition": "inject_per_handoff",
+      "status": "completed",
+      "study_eligible": false
+    }
+  ]
+}

@@ -12,11 +12,13 @@ Design is crossed 2×2: injection (on / off) × verification scheme
 The two clean cells give each scheme its own false-positive rate,
 measured against the number of checks that scheme actually makes.
 
-Framed as survival rather than a flat rate: of the runs with an
-injected failure, what fraction is still uncaught after k handoffs.
+The original survival comparison is retained as design history. Amendment 16
+withdraws it as an informative primary claim; see `PREREGISTRATION.md` and
+`REPORT.md` for the current research framing and reported evidence.
 
 **Verifiers flag only. They never stop the chain and never repair it.**
-All four steps run in every run, whatever fires.
+Flags do not change task execution. Refusals or execution failures can leave
+later stages unexecuted; the trace retains all four step records.
 
 Apart Research Swarm Alignment Hackathon, 6–8 November 2026.
 
@@ -56,8 +58,11 @@ Nobody has been removed as a repository collaborator.
 There are two, and they are not duplicates. Ahmed Tariq's offline runner on
 `feat/offline-runner-traces` is fixture-based and predates the sprint in part
 (see Prior work). The live runner on `main` is sprint work: it makes real
-provider calls and emits the same documented v0.2 trace format, untested
-against his replay tooling.
+provider calls and emits `live-0.2`, a distinct wire format from
+`offline-fixture-0.2`. The replay CLI accepts both formats. Compatibility tests
+exercise the actual live writer with a scripted provider; they do not establish
+that the empirical pilot files have been replayed. See
+[live replay](docs/live-replay.md) for commands and proof limits.
 
 ## Prior work
 
@@ -70,20 +75,34 @@ as preexisting:
   2 models, zero honest failure reports.
 - The 160-run corpus itself, used as background and motivation only.
   **No result in this submission is computed from it.**
-- `PREREGISTRATION.md` and `trace_schema.md` were written on
-  5–6 November, before the sprint opened and before any code existed.
+- Initial versions of `PREREGISTRATION.md` and `trace_schema.md` were written on
+  5–6 November, before the sprint opened.
   They are design documents, not code.
 
-Everything in `src/` and `analysis/` is written during the sprint.
+The offline runner, fixture tests and replay tooling on this branch began on
+**5 November 2026 (Europe/London), before the sprint**. They are declared
+preexisting preparation. The v0.2 Amendment 7 changes were implemented on
+**6 November after 13:30 Europe/London** and are recorded separately in new
+fixture provenance. Synthetic fixture output is not study data. Amendment 9
+reconciles the preregistration with this dated declaration. The containment
+matcher and live-format replay integration were added on **7 November**;
+the original preparation retains its earlier provenance.
 
 ## Layout
 
 | path | what |
 |---|---|
 | `PREREGISTRATION.md` | question, hypotheses, design, endpoints, exclusions, resolution limit, what a null looks like, what this cannot establish |
-| `trace_schema.md` | the per-step and per-run record format |
-| `src/` | chain, agents, verifiers, runner |
-| `analysis/` | propagation, detection, survival curves |
+| `trace_schema.md` | run, task-step, checker-opportunity and evaluation records |
+| `src/swarm_handoff/` | offline runner, synthetic callbacks and versioned fixture/live replay |
+| `src/injection.py`, `src/oracle.py`, `src/checker_tools.py`, `src/scoring.py` | shared experiment helpers from main |
+| `src/live_runner.py`, `src/provider.py`, `scripts/run_pilot.py` | live execution path maintained on main |
+| `tests/` | data isolation, failure accounting and artifact validation |
+| `scripts/offline_check.py` | one command to test, generate fixtures and replay their counts |
+| `scripts/check_live_replay.py` | actual live writer and replay compatibility check using a scripted provider |
+| `docs/offline-runner.md` | usage, provisional interface and remaining execution gates |
+| `docs/live-replay.md` | saved live-run validation, commands and limitations |
+| `analysis/` | shared adjudication, descriptive summaries and statistics |
 
 ## The three things that decide the build
 
@@ -91,16 +110,44 @@ Everything in `src/` and `analysis/` is written during the sprint.
    file after A writes it.** If B opens the file it finds it empty,
    reports so, and nothing propagates in either scheme. The file is
    ground truth precisely because the chain stops consulting it.
-   (`PREREGISTRATION.md` §3)
+   External checkers have optional read-only access, identical under both
+   schemes; that access never gives them the expected record or oracle.
+   (`PREREGISTRATION.md` §§3–4)
 2. **Propagation is a canary test, not a judgement.** `held_record` carries
    a 12-character random reference code in a field the pipeline carries
    and never transforms; propagation to step *k* is that code appearing
-   in agent *k*'s `asserted` output fields. One string comparison — no
-   inverse transform, no canonicalisation table, no scorer. (§5)
+   in agent *k*'s `asserted` output fields. C also propagates if its structured
+   verdict is `pass`, even without the code. Clean runs and A's origin are not
+   propagation events. New fixtures follow Amendment 8: case-sensitive token
+   containment in recursive string values, never object keys. Archived fixtures
+   retain their recorded matching policy. (§5)
 3. **A run in which only the task caught the discrepancy counts as
    uncaught** for the primary endpoint, and stays in the denominator.
    The primary measures the verification scheme, not the chain. (§6)
 
 ## Status
 
-Pre-registration and trace schema fixed before any run exists. All amendments are logged in §13 and dated before the sprint opened.
+The offline v0.2 implementation includes Amendment 7's strict C verdicts,
+optional checker reads and flag isolation, plus Amendment 8 containment.
+Replay preserves original v0.1/v0.2 matching policies and saved bytes.
+The `swarm-handoff` CLI generates only synthetic fixtures or reads saved data;
+it makes no model calls. The separate live execution path is already present.
+
+Saved `live-0.2` runs are validated against the producer's exports, handoffs,
+propagation, optional reads and repeat-zero opportunity records. Summaries use
+the shared analysis without pooling live and fixture evidence. The compatibility
+probe generates mocked runs, not empirical results. Actual pilot traces are not
+checked into this repository; replaying them requires their saved run folders.
+
+The runner runtime uses the standard library. Full repository checks also need
+the pinned pytest development dependencies, including the shared helper tests.
+From the repository root, with Python 3.11 or newer:
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements-dev.txt
+.venv/bin/python scripts/offline_check.py
+```
+
+See [the runner notes](docs/offline-runner.md) for saved-data replay and the
+distinction between fixture conventions and the study contract.
