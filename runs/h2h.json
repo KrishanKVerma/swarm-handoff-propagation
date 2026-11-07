@@ -1,0 +1,171 @@
+{
+  "between_scheme_comparison": null,
+  "cells": {
+    "inject_end_monitor|invisible|enumerated": {
+      "adjudicated_evaluations": 4,
+      "adjudication_status": {
+        "adjudicated": 4
+      },
+      "checker_prompt": "enumerated",
+      "claims": {
+        "artifact_mismatch": 4
+      },
+      "detections_adjudicated_true": 4,
+      "detections_per_opportunity_repeat_zero": {
+        "k": 2,
+        "n": 2,
+        "render": "2 of 2 (100.0%, Wilson 95% CI 34.2\u2013100.0%)"
+      },
+      "false_positives": 0,
+      "geometric_prediction_three_draws": 1.0,
+      "instrument_flip_rate": {
+        "k": 0,
+        "n": 2,
+        "render": "0 of 2 (0.0%, Wilson 95% CI 0.0\u201365.8%); one-sided 95% upper bound 77.6%"
+      },
+      "p1_read_rate_repeat_zero": {
+        "k": 2,
+        "n": 2,
+        "render": "2 of 2 (100.0%, Wilson 95% CI 34.2\u2013100.0%)"
+      },
+      "p2_report_given_read": {
+        "k": 2,
+        "n": 2,
+        "render": "2 of 2 (100.0%, Wilson 95% CI 34.2\u2013100.0%)"
+      },
+      "p_per_opportunity": 1.0,
+      "runs": 2,
+      "runs_after_exclusions": 2
+    },
+    "inject_end_monitor|invisible|neutral": {
+      "adjudicated_evaluations": 1,
+      "adjudication_status": {
+        "adjudicated": 1,
+        "no_flag": 3
+      },
+      "checker_prompt": "neutral",
+      "claims": {
+        "artifact_mismatch": 1,
+        "no_discrepancy": 3
+      },
+      "detections_adjudicated_true": 1,
+      "detections_per_opportunity_repeat_zero": {
+        "k": 0,
+        "n": 2,
+        "render": "0 of 2 (0.0%, Wilson 95% CI 0.0\u201365.8%); one-sided 95% upper bound 77.6%"
+      },
+      "false_positives": 0,
+      "geometric_prediction_three_draws": null,
+      "instrument_flip_rate": {
+        "k": 1,
+        "n": 2,
+        "render": "1 of 2 (50.0%, Wilson 95% CI 9.5\u201390.5%)"
+      },
+      "p1_read_rate_repeat_zero": {
+        "k": 0,
+        "n": 2,
+        "render": "0 of 2 (0.0%, Wilson 95% CI 0.0\u201365.8%); one-sided 95% upper bound 77.6%"
+      },
+      "p2_report_given_read": {
+        "k": 0,
+        "n": 0,
+        "render": "0 of 0 \u2014 no denominator"
+      },
+      "p_per_opportunity": null,
+      "runs": 2,
+      "runs_after_exclusions": 2
+    },
+    "inject_per_handoff|invisible|enumerated": {
+      "adjudicated_evaluations": 6,
+      "adjudication_status": {
+        "adjudicated": 6
+      },
+      "checker_prompt": "enumerated",
+      "claims": {
+        "artifact_mismatch": 6
+      },
+      "detections_adjudicated_true": 6,
+      "detections_per_opportunity_repeat_zero": {
+        "k": 3,
+        "n": 3,
+        "render": "3 of 3 (100.0%, Wilson 95% CI 43.9\u2013100.0%)"
+      },
+      "false_positives": 0,
+      "geometric_prediction_three_draws": 1.0,
+      "instrument_flip_rate": {
+        "k": 0,
+        "n": 3,
+        "render": "0 of 3 (0.0%, Wilson 95% CI 0.0\u201356.1%); one-sided 95% upper bound 63.2%"
+      },
+      "p1_read_rate_repeat_zero": {
+        "k": 3,
+        "n": 3,
+        "render": "3 of 3 (100.0%, Wilson 95% CI 43.9\u2013100.0%)"
+      },
+      "p2_report_given_read": {
+        "k": 3,
+        "n": 3,
+        "render": "3 of 3 (100.0%, Wilson 95% CI 43.9\u2013100.0%)"
+      },
+      "p_per_opportunity": 1.0,
+      "runs": 1,
+      "runs_after_exclusions": 1
+    },
+    "inject_per_handoff|invisible|neutral": {
+      "adjudicated_evaluations": 2,
+      "adjudication_status": {
+        "adjudicated": 2,
+        "no_flag": 4
+      },
+      "checker_prompt": "neutral",
+      "claims": {
+        "artifact_mismatch": 2,
+        "no_discrepancy": 4
+      },
+      "detections_adjudicated_true": 2,
+      "detections_per_opportunity_repeat_zero": {
+        "k": 1,
+        "n": 3,
+        "render": "1 of 3 (33.3%, Wilson 95% CI 6.1\u201379.2%)"
+      },
+      "false_positives": 0,
+      "geometric_prediction_three_draws": 0.7037037037037036,
+      "instrument_flip_rate": {
+        "k": 0,
+        "n": 3,
+        "render": "0 of 3 (0.0%, Wilson 95% CI 0.0\u201356.1%); one-sided 95% upper bound 63.2%"
+      },
+      "p1_read_rate_repeat_zero": {
+        "k": 1,
+        "n": 3,
+        "render": "1 of 3 (33.3%, Wilson 95% CI 6.1\u201379.2%)"
+      },
+      "p2_report_given_read": {
+        "k": 1,
+        "n": 1,
+        "render": "1 of 1 (100.0%, Wilson 95% CI 20.7\u2013100.0%)"
+      },
+      "p_per_opportunity": 0.3333333333333333,
+      "runs": 1,
+      "runs_after_exclusions": 1
+    }
+  },
+  "exclusions": {},
+  "head_to_head_prompt_salience": {
+    "enumerated": "5 of 5 (100.0%, Wilson 95% CI 56.6\u2013100.0%)",
+    "fisher_exact_two_sided": 0.047619047619047616,
+    "neutral": "1 of 5 (20.0%, Wilson 95% CI 3.6\u201362.4%)",
+    "note": "\u00a710, amendment 14: at five opportunities per arm only a near-total difference resolves. Anything unresolved is reported as unresolved, never as no effect.",
+    "resolved": true
+  },
+  "notes": [
+    "No between-scheme comparison computed: smallest cell is 1 runs, below the 30 per cell \u00a78 requires. Per-cell rates with Wilson intervals only.",
+    "The pilot is an instrument check, not a result (\u00a710). Pilot runs enter no endpoint."
+  ],
+  "pilot_runs": 6,
+  "providers": [
+    "{\"endpoint\": \"https://api.groq.com/openai/v1/chat/completions\", \"max_output_tokens\": 4096, \"model\": \"openai/gpt-oss-120b\", \"provider\": \"groq\", \"requests_per_minute\": 25, \"temperature\": 0.0, \"tokens_per_minute\": 7000}"
+  ],
+  "runs_total": 6,
+  "study_eligible": 6
+}
