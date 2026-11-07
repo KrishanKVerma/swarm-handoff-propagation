@@ -12,28 +12,28 @@ rewritten in the author's voice before shipping.
 
 ## Abstract
 
-> **A verifier that is not told what to look for mostly does not look.**
-> Naming candidate failure modes in an LLM checker's prompt moved detection of
-> a silent failure from **1 of 5 opportunities to 5 of 5** (two-sided Fisher
-> exact p = 0.0476), and the mechanism is reading rather than reporting: the
-> checkers that were not pointed at the artifact mostly never opened it, and
-> concluded nothing was wrong.
+> **A verifier that is not told what to look for mostly does not look.** In a
+> four-agent pipeline with a silently failed write, naming candidate failure
+> modes in the checker's prompt moved detection from **1 of 5 opportunities to
+> 5 of 5** (two-sided Fisher exact p = 0.0476, under a reading fixed before the
+> run). The mechanism is reading rather than reporting: the checkers that were
+> not pointed at the artifact mostly never opened it, and returned an
+> affirmative judgement that nothing was wrong.
 >
-> This matters because where to put a verifier is settled and why it works is
-> not. Singh and Pawar show boundary gates cut failure survival from 58.4% to
-> 16.2% across 346 injected failures; we take that result and ask what a gate
-> is doing when it works. Placement decides how often a gate runs. Nothing
-> about placement decides whether it looks.
+> Where to put a verifier is settled and why it works is not. Singh and Pawar
+> show boundary gates cut failure survival from 58.4% to 16.2% across 346
+> injected failures; we take that and ask what a gate is doing when it works.
+> Placement decides how often a gate runs, not whether it looks.
 >
-> The failure we inject is shaped to isolate that. The first agent's write tool
-> returns a success-shaped response and the file stays empty, so the agent's
-> report is truthful about its own belief: the content is right and only the
-> world-state claim is false. Nothing in the text is wrong. Where Singh and
-> Pawar have an error propagating, we have an absence propagating, which
-> reduces detection to one question — does anything read the artifact?
+> The failure is shaped to isolate that. The first agent's write tool returns a
+> success-shaped response and the file stays empty, so the agent's report is
+> truthful about its own belief: the content is right and only the world-state
+> claim is false. Nothing in the transcript is wrong — where Singh and Pawar
+> have an error propagating, we have an absence, and detection reduces to one
+> question: does anything read the artifact?
 >
-> Six live runs, and a pre-registration with sixteen dated amendments, one of
-> which withdraws our own registered primary. **The constraint that made our
+> The comparison is narrower than enumeration against none, and rests on one
+> observation at five opportunities an arm. **The constraint that made our
 > detection metric machine-adjudicable was eliciting the behaviour it
 > measured.**
 
