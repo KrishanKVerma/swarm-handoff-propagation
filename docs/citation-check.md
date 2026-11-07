@@ -11,14 +11,27 @@ without the sentence, so entries are marked accordingly.
 
 Checked 2026-11-07.
 
-## Confirmed — exists, authors correct
+## Verified — exists, authors correct, claim matches the source
 
-| cite | what it actually is | notes |
+Fourteen references, all checked. Where a draft sentence overstated a source,
+the correction is recorded here rather than quietly made.
+
+| cite | what it is | claim check |
 |---|---|---|
-| **Kemeklis & Vemuri 2026** | *Omission Attacks: When Doing Nothing Is the Attack*, Jurgis Kemeklis and Nikhil Vemuri (Team MAIA). AI Control Hackathon 2026, Apart Research Sprint, 23 March 2026. **1st place, LinuxArena track.** | Real, placement real. **The figures matter:** 5 hand-crafted attack traces; the strongest attack scores at most 4.0/10 against an Opus 4.6 monitor, against a 92.3/100 mean detection score on commission attacks; postcondition monitoring catches 5 of 5. **The page reports no false-positive rate at all**, and a reviewer asks for one. Any sentence citing an FPR for this work is wrong. |
-| **Najt et al. 2026** | *SLEIGHT-Bench: A Benchmark of Evasion Attacks Against Agent Monitors*, Elle Najt, Colin Toft, Tyler Tracy, Fabien Roger, Joe Benton. arXiv **2605.16626**. | 40 synthetic coding-agent transcripts, 11 blind-spot categories. An Opus 4.6 monitor with extended thinking at 1% FPR **never catches 20 of the 40** across 10 trials; overall catch rate **32%**. Targeted prompts help some categories, no single prompt covers all — directly relevant to our enumeration finding. |
-| **Korbak et al. 2025** | *Chain of Thought Monitorability: A New and Fragile Opportunity for AI Safety*. arXiv **2507.11473**. | Exists, author-year correct. |
-| **Turpin et al. 2023** | *Language Models Don't Always Say What They Think*. arXiv **2305.04388**. | Verified earlier in this project. |
+| **Advani 2026** | *From Confident Closing to Silent Failure: Characterizing False Success in LLM Agents*, Laksh Advani (Colorado). Workshop on Failure Modes in Agentic AI, ICML 2026. arXiv:2606.09863. | Confirmed. False success is 616 of 1,730 tau2-bench failures (35.6%). "No configuration across 5 judges, 5 prompt strategies, and full task specifications exceeds AUROC 0.65", on 295 trajectories. **Our sentence was corrected** from "LLM judges never exceed AUROC 0.65" — a universal claim — to "no judge configuration tested exceeds AUROC 0.65". |
+| **Arcuschin et al. 2025** | *Chain-of-Thought Reasoning in the Wild Is Not Always Faithful*, Iván Arcuschin, Jett Janiak, Robert Krzyzanowski, Senthooran Rajamanoharan, Neel Nanda, Arthur Conmy. arXiv:2503.08679. | Confirmed. Across 4,834 question pairs the unfaithful-pair rate runs 0.04% (Claude 3.7 Sonnet, 1k thinking) to 13.49% (GPT-4o-mini). Cited only for the existence of unfaithful CoT, which it supports. |
+| **Hiller, Jhumka & Suri 2001** | *An Approach for Analysing the Propagation of Data Errors in Software*, Martin Hiller, Arshad Jhumka, Neeraj Suri (Chalmers). DSN 2001. | Confirmed on all three parts of our sentence: §4.1 defines error permeability as the conditional probability of an output error given an input error; §6 estimates it per module by fault injection; §5 and observations OB4–OB6 use it to place detection mechanisms. |
+| **Hu 2026** | *Silence Is Endorsement: Verification-Status Laundering in LLM Agent Pipelines*, Yibo Hu (Illinois Institute of Technology). arXiv:2609.20211v1. | Confirmed exactly. Removing an "(UNVERIFIED)" marker while keeping the authorization claim raised risky approval from 0.052 to 0.601 (Llama-3.1-8B) and 0.089 to 0.975 (Qwen2.5-14B). Summarizers drop the status on 0.10–0.13 of outputs. |
+| **Huang et al. 2025** | *On the Resilience of LLM-Based Multi-Agent Collaboration with Faulty Agents*, Jen-Tse Huang, Jiaxu Zhou, Tailin Jin, Xuhui Zhou, Zixi Chen, Wenxuan Wang, Youliang Yuan, Michael Lyu, Maarten Sap. ICML 2025, PMLR 267:26202–26226. | Paper and authors confirmed. **Two of our claims were overstated and both were corrected.** (a) We wrote that it finds linear chains least resilient; the source reports the hierarchical structure most resilient at a 5.5% drop against 10.5% and 23.7%, without identifying which structure took the 23.7%. (b) We wrote that an Inspector agent "recovers most of the lost performance"; the source says it recovers "up to 96.4% errors made by faulty agents" — a best case on errors, not an average on performance. |
+| **Kemeklis & Vemuri 2026** | *Omission Attacks: When Doing Nothing Is the Attack*, Jurgis Kemeklis and Nikhil Vemuri (Team MAIA). Apart Research AI Control Hackathon 2026, 23 March 2026. **1st place, LinuxArena track.** | Confirmed, placement included. 5 hand-crafted attack traces; the strongest scores at most 4.0/10 against an Opus 4.6 monitor, against 92.3/100 mean on commission attacks; postcondition monitoring catches 5 of 5. **The report contains no false-positive rate** — a reviewer asks for one — so no sentence of ours may cite an FPR to this work. |
+| **Korbak et al. 2025** | *Chain of Thought Monitorability: A New and Fragile Opportunity for AI Safety*, Tomek Korbak et al. arXiv:2507.11473. | Confirmed. Cited for the premise that CoT monitoring assumes evidence appears in what the agent says. |
+| **Najt et al. 2026** | *SLEIGHT-Bench: A Benchmark of Evasion Attacks Against Agent Monitors*, Elle Najt, Colin Toft, Tyler Tracy, Fabien Roger, Joe Benton. arXiv:2605.16626. | Confirmed. 40 synthetic transcripts, 11 blind-spot categories. An Opus 4.6 monitor with extended thinking at 1% FPR never catches 20 of the 40 across 10 trials; overall catch rate 32%. Targeted prompts help some categories while no single prompt covers all — the sentence we place beside our own finding. |
+| **Panthi & Abdelfattah 2026** | *Outcome Monitors: Recovery Affordances for Silent Tool Failures*, Sugam Panthi and Rabab Abdelfattah (Southern Mississippi). arXiv:2608.19303v1, 19 Aug 2026. | Confirmed, and it is why we no longer claim the injection design as ours. Faults are injected only into the text the model observes, environment state unchanged so evaluators score the true state. Single acting agent per episode, deterministic invariant checker, recovery as the outcome. ToolMaze completion 35/320 to 90/320, +17.2 pp (95% CI 11.25–23.44). |
+| **Singh & Pawar 2026** | *The Hallucination Snowball: Modeling Error Propagation as State Transitions in Multi-Agent LLM Pipelines*, Prabhjot Singh and Bhushan Pawar. arXiv:2608.14588v1, 22 June 2026. | Confirmed. Four-agent pipeline, injected hallucinations, boundary gates against end-of-pipeline checking against none. 23.7% of 346 survive to the final output; detection 72.0% to 50.9% stage 1 to 4; per-boundary escape 24.6%, 48.3%, 89.3%; boundary gates cut survival 58.4% to 16.2%, Cohen's h = −0.911, p < 0.000001. **See the section below: this is the work that superseded our registered primary.** |
+| **Singh, Gopalan & Narayanan 2026** | *Silent Failures in Agent–Tool Interaction: An Audit of ToolUniverse*, Devansh Singh, Shreya Gopalan, Sundaraparipurnan Narayanan (AI Tech Ethics). | Confirmed. Failures are naturally occurring, not injected: 91 observed across 198 candidate test cases on 15 manually validated tools, 52 at the API layer and 25 at the wrapper layer, 7 of 15 tools failing on more than half. The authors call the results illustrative rather than representative, and our sentence does not generalise past that. |
+| **Sun et al. 2024** | *Tools Fail: Detecting Silent Errors in Faulty Tools*, Jimin Sun (Cohere), So Yeon Min, Yingshan Chang, Yonatan Bisk (CMU). arXiv:2406.19228. | Confirmed in the paper's own words: "most tool failures are 'silent'" and "models tend to overtrust tools", with "smaller models… overtrust the tool and allow errors to pass". Note for honesty: the paper also finds models often *can* identify incorrect outputs (60–70 F1 with in-context interventions), so our sentence is scoped to over-trust rather than to incapacity. |
+| **Turpin et al. 2023** | *Language Models Don't Always Say What They Think*, Miles Turpin et al. arXiv:2305.04388. | Confirmed. Cited alongside Arcuschin for unfaithful reasoning straining the CoT-monitoring premise. |
+| **Zhao 2026** | *CatchBench: When Can an Agent Failure Be Caught?*, Yue Zhao (USC). Preprint, work in progress. | Confirmed. Varies the auditor's information state (PRE / LIVE / POST) rather than verifier placement; 126 Who&When, 376 SWE-Gym and 660 tau-bench runs, with an injected Gold split whose boards **failed the authors' own admissibility bar** and are reported as mechanism diagnostics only. Cited for framing and for the reporting discipline we follow: 47 of 118 pre-declared contrasts separate after correction and the other 71 are reported as unresolved, not equal. |
 
 ## Singh & Pawar 2026 — confirmed, and it is the problem
 
@@ -68,20 +81,6 @@ open, and the novelty claim must be narrowed to what is actually ours:
 Their paper strengthens (1) and (3) rather than weakening them: they show the
 boundary-gate advantage is real and large, which makes the question of *what
 makes a boundary gate actually look* more pointed, not less.
-
-## Cannot be checked without the titles
-
-An author-year alone is not searchable. These need the titles from Soumyajit's
-text before they can be confirmed: **Huang et al. 2025**, **Hu 2026**,
-**Sun et al. 2024**, **Advani 2026**, **Hiller / Jhumka / Suri 2001**,
-**Arcuschin et al. 2025**.
-
-Arcuschin et al. 2025 is probably *Chain-of-Thought Reasoning In The Wild Is
-Not Always Faithful*, arXiv 2503.08679 — **recalled, not confirmed**, and it
-is not citable on that basis.
-
-Hiller / Jhumka / Suri 2001 is probably the DSN-era work on error propagation
-in software — **recalled, not confirmed**.
 
 ## Verified by the author, recorded here
 

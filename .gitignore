@@ -10,5 +10,6 @@ dist/
 .pytest_cache/
 venv/
 .DS_Store
-runs/
 traces/
+# runs/ is deliberately NOT ignored: the report's Code and Data section
+# states the traces are in the repository and gives a command that reads them.
