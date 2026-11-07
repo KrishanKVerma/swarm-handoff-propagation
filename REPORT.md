@@ -128,7 +128,7 @@ detectors accordingly.
 A second line concerns failures an agent cannot see or does not report. Most
 tool failures are silent and models over-trust tool outputs (Sun et al., 2024);
 agents claim completion the environment contradicts in 616 of 1,730 tau2-bench
-failures, and LLM judges reading the transcripts never exceed AUROC 0.65
+failures, and no judge configuration tested exceeds AUROC 0.65
 (Advani, 2026); and an audit of ToolUniverse found 91 failures across 198
 candidate cases, 7 of 15 tools failing on more than half (Singh, Gopalan and
 Narayanan, 2026). **Our injection design is not ours alone:** Panthi and
@@ -150,7 +150,9 @@ faithful and the evidence never enters the agent's context.
 into a *multi-agent chain* and tracks the resulting honest but false
 world-state claim agent by agent — Panthi and Abdelfattah's injection is the
 same construction with one agent. Our contribution is not that design but what
-it exposed.
+it exposed: the prompt constraint that makes a monitor's output
+machine-adjudicable also determines whether the monitor inspects the artifact
+at all.
 
 ## 3. Methods
 
