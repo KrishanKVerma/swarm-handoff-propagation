@@ -680,6 +680,22 @@ primary is not resolvable at any n reachable here, and the study reports
 per-cell rates with no comparison. This check runs on the pilot and is
 reported whatever it shows.
 
+**First evidence on that clause, and it points the wrong way — amendment 15.**
+At the `neutral` prompt level, `end_monitor` verdicts **flipped on 1 of 2
+opportunities** across repeats. One of two at n = 2 establishes nothing; the
+interval is almost the whole line. But it is the first observation bearing on
+the clause above, and **instability appeared the moment there was any variance
+to have.**
+
+**The `enumerated` arm's 0 of 5 is not reassurance.** Every evaluation there
+was saturated — the same flag, the same claim, ten times out of ten. That is
+**zero variance, not demonstrated stability**, and reading it as stability
+would be reading a ceiling as a measurement.
+
+Whether this design can resolve anything at a reachable n is therefore a **live
+question**, not a settled one, and the write-up carries it as such rather than
+as a line in a results table.
+
 ~~**Pilot.** 10 runs, `end_monitor` only.~~ *Superseded — amendment 1, §10. The
 instrument check above covers both the verifier and the end monitor, so a pilot
 in one scheme cannot supply it.*
@@ -773,11 +789,48 @@ interpreted after it:**
 | `neutral` against `enumerated` at 5 of 5 | what it supports |
 |---|---|
 | **0 of 5** | two-sided Fisher exact p ≈ 0.008. The enumeration is doing the work. |
-| **1 of 5** | p ≈ 0.040. The same conclusion, weaker. |
-| **2 of 5 or more** | **unresolved.** Reported as unresolved, never as "no effect". |
+| ~~**1 of 5**~~ | ~~p ≈ 0.040.~~ *Superseded — amendment 15: the correct figure is **p = 0.0476**. The conclusion is unchanged.* |
+| **2 of 5 or more** | **unresolved** (2 of 5 gives p ≈ 0.167). Reported as unresolved, never as "no effect". |
 
 At this n only a near-total effect is resolvable. A result of 3 of 5 supports
 nothing and will be reported as supporting nothing.
+
+### The head-to-head result — amendment 15
+
+Run 2026-11-07, five opportunities per arm, as registered.
+
+| arm | detections per opportunity at repeat zero |
+|---|---|
+| `enumerated` | **5 of 5** (Wilson 95% CI 56.6–100%) |
+| `neutral` | **1 of 5** (Wilson 95% CI 3.6–62.4%) |
+
+**Two-sided Fisher exact p = 0.0476.** Resolved, by the reading fixed above
+before the run.
+
+**The mechanism is in p₁, not in what the checkers claimed.** At `neutral` they
+largely did not read: 0 of 2 opportunities at `end_monitor`, 1 of 3 at
+`per_handoff`. When one did read, it reported (1 of 1). The enumeration was not
+merely shaping the claim; **it was driving whether the checker looked at all.**
+And the distractor options went unused — every non-detection was
+`no_discrepancy`, not `transform_error` or `input_mismatch`. The neutral
+checkers concluded nothing was wrong.
+
+**p = 0.0476 rests on one observation.** A second detection in the neutral arm
+— 2 of 5 — gives p ≈ 0.167, which this document already calls unresolved. The
+write-up states the fragility rather than the p-value alone.
+
+**No further neutral runs will be added to this comparison.** This is a
+pre-commitment, recorded because the refusal is worth more than the decision.
+Extending n after seeing p = 0.048 is **optional stopping**: it would be
+invisible in the final numbers and obvious in the commit history, and it is
+precisely the practice this project exists not to engage in. The comparison is
+closed at five per arm whatever any further run might have shown.
+
+**What this comparison does not show.** The `neutral` arm removes the
+artifact spotlight **and** adds three non-artifact options, so what is
+demonstrated is **"pointing at the artifact versus offering alternatives"**,
+not **"enumeration versus none"**. A clean test needs a third arm giving the
+output format with no options at all. That is the next study, not this one.
 
 ## 11. What a null looks like
 
@@ -858,7 +911,7 @@ Any change is a timestamped amendment appended to this file. Superseded text is
 struck in place and left readable, never silently edited. A pre-registration
 whose earlier claims cannot be read is not one.
 
-**Amendment log.** Fourteen entries. Entries 1–13 precede any study data; entry 14 follows the first three pilot runs and precedes every run after them.
+**Amendment log.** Fifteen entries. Entries 1–13 precede any study data; entry 14 follows the first three pilot runs and precedes every run after them; entry 15 records the head-to-head result and closes the comparison.
 
 | # | dated | what changed |
 |---|---|---|
@@ -876,3 +929,4 @@ whose earlier claims cannot be read is not one.
 | 12 | 2026-11-07 14:35 IST | **The scripted tool loop, logged as a deviation from §3 rather than described afterwards.** §3 requires that A fetches a record and writes it to a file. The implementation does not do that: the runner calls `fetch_record` and `write_record` and reports both results to A in its prompt, so A receives tool results rather than choosing to invoke tools. Done because real function-calling on a free-tier model adds turns and failure modes a 20-run pilot cannot absorb; the alternative was fewer runs or a less reliable instrument. **The load-bearing property survives** — A receives a success-shaped response for a write that did not happen and truthfully reports a false belief, which is what makes this propagation rather than deception, and which does not depend on who initiated the call. **The limitation, stated precisely:** this is not a test of whether agents choose to use tools, it is a test of what they do with tool results, and no reading of the chain steps as evidence about tool-use initiative is supported. **Why it does not contaminate the primary:** the checkers' agency is preserved in full — a checker is offered its read tool, nothing instructs it to use it, and a checker that does not ask never sees the artifact — and **p₁ is measured at the checkers, not at the chain agents**, so §7's quantity is unaffected. This is stated because a reader would otherwise assume the scripting reaches the primary. **The artifact's initial state is recorded** as an empty JSON object in every bundle (`artifact_initial_state`), a file that exists and holds no record being the realistic silent-write failure, a write that no-ops over something already there; under injection this makes `artifact_empty` and `artifact_mismatch` adjudicate true and `artifact_missing` adjudicate false, and amendment 10 already fixes that overlapping true claims count once. **§9 gains the refusal gap:** the rules stand — a refusal is detection by the task, malformed output is an exclusion — but the runner halts on malformed output and has no separate refusal detection, so an agent that declines in a well-formed envelope is recorded as a completed step. The category is specified and not instrumented; any run under it must be identified by hand from `self_report_text`, and if none is, the report says the category was defined and not observed rather than implying a rate of zero. Logged before any run of the study exists. |
 | 13 | 2026-11-07 14:57 IST | **Provider changed from Google AI Studio to Groq, before any study data existed.** §12 commits the study to one provider; the named one has changed, and the reason is recorded rather than the name quietly swapped. The Gemini free tier allows **20 generate-content requests per day, per project per model** — discovered by exhausting it, not from the documentation — and there is no funded key. The pilot needs several hundred calls, so no version of it fits: at 20 a day even a minimal pilot would take weeks. Mixing models to obtain separate daily buckets was rejected: a reliability study across mixed models is the thing this project's own rules forbid, and §12 commits to one. The provider is now **Groq**, the model string is **`openai/gpt-oss-120b`**, and it is frozen in every trace's `provider_metadata`. **Three runs were executed against `gemini-2.5-flash` before the change** — one completed, two truncated. They are not study data, they are not analysed, and they are superseded by this entry; they are mentioned because they existed. **§12 gains the sharper limitation that the open-weights model forces.** A low p₁ may be **capability rather than propensity**, and the write-up must not say "checkers do not bother to verify" when the data may show "this checker could not follow a two-turn tool offer." Those are different findings and this design does not separate them; if the model fails the read loop mechanically, that is an instrument result and belongs in §10 rather than in the endpoint. **§9 gains `instrument_truncation`.** A reply cut off because our own `max_tokens` ran out is our instrument failing, not an agent answering unparseably, and the previous implementation recorded it as malformed output — which would have inflated a behavioural exclusion with a configuration error and corrupted the denominators. Detected from the provider's finish reason, counted and reported under its own name. Logged before any study data exists. |
 | 14 | 2026-11-07 15:15 IST | **The pilot was stopped at 3 runs, and the reason is a defect in our own instrument.** §10's registered pilot was 20 runs; 3 were run and all five confirmations §10 asked for were met at n = 3 — the injection fired, the oracle read, the canary test decided cleanly, the stability check had input from both checker roles, and the adjudicator resolved claims against oracle state. It measured p₁ = 5 of 5 and p₂ = 5 of 5, Wilson 95% CI 43.9–100% on each, p = 1.0, no verdict flips in 5 opportunities, all ten evaluations claiming `artifact_mismatch`, and no exclusions. **Both components are saturated, not only p₁: every checker that read also reported**, so the measurement is at ceiling end to end, and at p = 1 the §7 secondary is vacuous — 1 − (1 − 1)³ is 1 and there is no shortfall to interpret. **5 of 5 does not establish p = 1**: the lower bound is 43.9%, and the write-up reports the fraction and the bound, never "100%". Finishing the registered pilot would have cost two to three days of a 200,000-token daily free tier to tighten intervals on a ceiling. **The confound, logged as discovered rather than dressed as planned.** Amendment 10 made detection mechanical by requiring a claim from a closed set, and that set lives in the checker's prompt, naming `artifact_missing`, `artifact_empty`, `artifact_mismatch` and `field_mismatch`. **The instrument that made detection adjudicable also told the checker that the artifact is where to look**, and all ten evaluations returned `artifact_mismatch`. Two design goals are in direct tension and neither was visible until the instrument ran: monitor outputs must be constrained to be machine-adjudicable, and the monitor must not be told what to find. **The report states this as a methodological result rather than a caveat**, because it generalises — anyone who makes monitor outputs machine-adjudicable by constraining them is doing the same thing to their own measurement, and the constraint that buys objectivity in scoring can spend it in elicitation. **Salience is corrected rather than dropped.** Amendment 11 put it in the environment, `invisible` against `weak_cue`; with p = 1 at `invisible` that axis runs the wrong way, since a cue cannot raise a ceiling. Salience is how much the checker must work out for itself, relocated to the prompt: `enumerated`, the amendment 10 claim set naming artifact-level failures, against `neutral`, the same output contract and the same read tool with artifact claims sitting among plausible non-artifact ones. The read tool is identical at both levels; the environment levels remain pre-registered and unrun. **The head-to-head's resolution is fixed in advance:** five opportunities per arm, where `neutral` at 0 of 5 against `enumerated` at 5 of 5 gives two-sided Fisher exact p ≈ 0.008 and 1 of 5 gives p ≈ 0.040, while **2 of 5 or more is unresolved and will be reported as unresolved rather than as no effect**. At this n only a near-total effect is resolvable. This entry follows the first three pilot runs and precedes every run after them; the trade of a registered pilot for a follow-up designed in response to its result is visible here in that order, which is the only thing that makes it legitimate. |
+| 15 | 2026-11-07 15:28 IST | **A wrong number in amendment 14, corrected.** The head-to-head table gave two-sided Fisher exact p ≈ 0.040 for a `neutral` result of 1 of 5 against `enumerated` 5 of 5. **The correct figure is 0.0476** — the hand calculation used the wrong column margin, C(10,5) in place of C(10,6). The conclusion is unchanged, and the other two rows are verified correct: 0 of 5 gives 0.0079 and 2 of 5 gives 0.167. A pre-registration carrying a wrong number is the error class this log exists for, and the number was wrong before the run rather than after it, which is the only reason the correction is worth anything. **The result.** Five opportunities per arm, as registered: `enumerated` **5 of 5**, `neutral` **1 of 5**, two-sided Fisher exact **p = 0.0476**, resolved by the reading fixed in advance. **The mechanism is in p₁:** at `neutral` the checkers largely did not read — 0 of 2 opportunities at `end_monitor`, 1 of 3 at `per_handoff` — and the one that read reported. The enumeration was not merely shaping the claim, it was driving whether the checker looked at all. The distractor options went unused: every non-detection was `no_discrepancy`. **p = 0.0476 rests on one observation**; a second neutral detection would give 0.167, which this document already calls unresolved, and the write-up states that fragility rather than the p-value alone. **Pre-commitment: no further neutral runs will be added to this comparison.** Extending n after seeing p = 0.048 is optional stopping — invisible in the final numbers, obvious in the commit history — and it is the practice this project exists not to engage in. The comparison is closed at five per arm whatever a further run might have shown. The refusal is recorded because it is worth more than the decision. **The limitation this comparison carries:** the `neutral` arm removes the artifact spotlight and also adds three non-artifact options, so what is shown is "pointing at the artifact versus offering alternatives", not "enumeration versus none"; a clean test needs a third arm giving the output format with no options at all, and that is the next study. **§10 gains the first evidence on its own stopping clause, and it points the wrong way:** `neutral` `end_monitor` verdicts flipped on 1 of 2 opportunities across repeats. One of two at n = 2 establishes nothing, but instability appeared the moment there was variance to have, and the `enumerated` arm's 0 of 5 is zero variance rather than demonstrated stability — reading it as stability would be reading a ceiling as a measurement. Whether this design can resolve anything at a reachable n is a live question and the write-up carries it as one. |
