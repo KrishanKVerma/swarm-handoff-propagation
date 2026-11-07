@@ -15,8 +15,7 @@ rewritten in the author's voice before shipping.
 - **Title.** *What makes a boundary gate look? Prompt enumeration determines
   whether an LLM monitor inspects the artifact* — **DRAFT**, set as the header
   above so the document no longer opens on the withdrawn question.
-  Alternatives: *A gate that isn't told what to look for doesn't look*;
-  *Enumeration elicits inspection*.
+  Alternative: *A gate that isn't told what to look for doesn't look*.
 - **Abstract, 150–250 words.** **DRAFT — rewrite in the author's voice.**
 
 > **A verifier that is not told what to look for mostly does not look.**
@@ -117,34 +116,68 @@ commits and timestamps — is in `PREREGISTRATION.md` §0.
 
 ## 2. Related Work
 
-`<<RELATED_WORK>>` — Soumyajit Karmakar's section. Every citation is checked
-against the source before it ships; the table is in `docs/citation-check.md`,
-and anything unconfirmed is cut rather than softened.
+Drafted by Soumyajit Karmakar; every citation checked against the source
+(`docs/citation-check.md`). **DRAFT — rewrite in the author's voice.**
 
-Five placements this section must make, from that check:
+Error propagation in multi-agent LLM systems has mostly been studied with
+content errors. Huang et al. (2025) inject mistakes into agents' responses and
+compare collaboration structures, finding a hierarchical structure most
+resilient at a 5.5% performance drop against 10.5% and 23.7% for the others;
+an added Inspector agent that reviews and corrects messages recovers up to
+96.4% of the injected errors. **Singh and Pawar (2026) is the result this
+study builds on**, and the reason its registered primary endpoint was withdrawn
+(§1): they inject numerical hallucinations after the first stage of a
+four-agent linear pipeline, compare verification gates at every handoff against
+a single end-of-pipeline check across 346 injected failures, and model
+propagation as a Markov chain of per-handoff escape probabilities. Their errors
+are false *content* that downstream agents transform until it can no longer be
+checked, and their gates have ground-truth access and repair what they find.
+Hu (2026) documents a related failure at handoffs: an authorization claim
+survives while the record that it was never verified is lost, and downstream
+monitors then approve the action — removing an "(UNVERIFIED)" marker while
+keeping the claim raised risky approval from 0.052 to 0.601 on one model and
+0.089 to 0.975 on another. Where to place error detectors also has a long
+history in dependable systems; Hiller, Jhumka and Suri (2001) use fault
+injection to estimate each module's error permeability and place detection
+mechanisms accordingly.
 
-- **Singh & Pawar (arXiv 2608.14588)** — the result we build on, stated as
-  settled, with its numbers: 346 injected failures, survival 58.4% → 16.2%
-  under boundary gates, p < 10⁻⁶. Our contribution sits downstream of it.
-- **Panthi & Abdelfattah, *Outcome Monitors* (arXiv 2608.19303)** — cited for
-  the injection design, which is theirs as much as ours: faults injected only
-  into the text the model observes, environment state unchanged. What differs
-  here: a single acting agent rather than a chain, a deterministic
-  invariant checker rather than an LLM deciding whether to look, and recovery
-  rather than detection as the outcome.
-- **Singh, Gopalan & Narayanan, ToolUniverse audit** — 91 failures across 198
-  candidate cases, 7 of 15 tools failing on more than half. Evidence that
-  silent tool failures occur naturally, which this study's injected design
-  cannot establish.
-- **Zhao, *CatchBench*** — for framing, and for reporting discipline: 47 of 118
-  pre-declared contrasts separate, and the remaining 71 are reported as
-  unresolved rather than equal.
-- **Najt et al., *SLEIGHT-Bench* (arXiv 2605.16626)** — beside our enumeration
-  finding. At 1% FPR an Opus 4.6 monitor never catches 20 of 40 attacks across
-  10 trials, 32% overall, and targeted prompts help some blind-spot categories
-  while no single prompt covers all.
-- **Kemeklis & Vemuri, *Omission Attacks*** — real figures only, and **no
-  false-positive rate**, since their report contains none.
+A second line of work concerns failures an agent cannot see or does not report.
+Most tool failures are silent and models over-trust tool outputs, with smaller
+models allowing errors to pass (Sun et al., 2024). Agents frequently claim
+completion that the environment state contradicts — 616 of 1,730 tau2-bench
+failures, 35.6% — and LLM judges reading the transcripts largely fail to catch
+it, with no configuration across five judges and five prompt strategies
+exceeding AUROC 0.65 (Advani, 2026). Such failures also occur in deployed tool
+ecosystems: an audit of ToolUniverse found 91 failures across 198 candidate
+cases, with 7 of 15 tools failing on more than half (Singh, Gopalan and
+Narayanan, 2026). **The injection design we use is not ours alone.** Panthi and
+Abdelfattah (2026) inject faults only into the text the model observes, leaving
+environment state unchanged so the evaluator scores the truth, and vary warning
+salience and timing; their setting is a single acting agent with a
+deterministic invariant checker, and their outcome is recovery rather than
+detection. CatchBench (Zhao, 2026) asks when a failure is catchable at all by
+varying the auditor's information state rather than the verifier's placement.
+
+On the monitoring side, Kemeklis and Vemuri (2026) show that monitors
+scrutinising an agent's actions miss harm caused by actions never taken, while
+checks on the final system state catch it. SLEIGHT-Bench (Najt et al., 2026)
+finds frontier monitors miss many evasion attacks — at a 1% false-positive rate
+an Opus 4.6 monitor never catches 20 of 40 across 10 trials — and reports that
+targeted prompts help some blind-spot categories while no single prompt covers
+all of them, which is the result closest to ours. Chain-of-thought monitoring
+rests on the premise that evidence of a problem appears in what the agent says
+(Korbak et al., 2025), and unfaithful reasoning already strains that premise
+(Turpin et al., 2023; Arcuschin et al., 2025). Our setting strains it from the
+other side: the agent's account is faithful, and the evidence never enters its
+context.
+
+**What is new here.** To our knowledge no prior work injects a silent tool
+failure into a *multi-agent chain* and tracks the resulting honest but false
+claim about world state agent by agent — Panthi and Abdelfattah's injection is
+the same construction in a single-agent setting. Our contribution is not that
+design but what it exposed: that the prompt constraint which makes a monitor's
+output machine-adjudicable also determines whether the monitor inspects the
+artifact at all.
 
 ## 3. Methodology
 
@@ -197,7 +230,7 @@ A, so A does not choose to invoke them (amendment 12). The artifact begins as an
 empty JSON object, so `artifact_empty` and `artifact_mismatch` are both true
 under injection and `artifact_missing` is false.
 
-**Figure 1** — `figures/chain.svg`.
+![Figure 1. The four-stage chain. The dashed amber line is the only write to the file, and under injection it does not happen: the tool returns success and the file stays empty. No agent in the chain re-reads the file, so the handoff message is the record's only carrier. Checkers may read it; nothing compels them to.](figures/chain.svg)
 
 ### What was fixed in advance
 
@@ -255,12 +288,9 @@ Registered as a head-to-head before it ran, five opportunities per arm:
 
 **The mechanism is in p₁.** At `neutral` the checkers largely did not read:
 
-| cell | read at repeat zero |
-|---|---|
-| `neutral` × `end_monitor` | **0 of 2** (one-sided 95% upper bound 77.6%) |
-| `neutral` × `per_handoff` | **1 of 3** (Wilson 95% CI 6.1–79.2%) |
-
-The one checker that read, reported (1 of 1). The enumeration was not only
+0 of 2 opportunities under `end_monitor` (one-sided 95% upper bound 77.6%) and
+1 of 3 under `per_handoff` (Wilson 95% CI 6.1–79.2%). The one checker that
+read, reported (1 of 1). The enumeration was not only
 shaping the claim — **it was driving whether the checker looked at all.** The
 distractor options went unused: every non-detection was `no_discrepancy`, not
 `transform_error` or `input_mismatch`. The neutral checkers concluded that
@@ -271,11 +301,8 @@ nothing was wrong.
 
 ### 4.3 Instrument stability
 
-| arm | verdict flips across repeats |
-|---|---|
-| `enumerated` | 0 of 5 opportunities |
-| `neutral` × `end_monitor` | **1 of 2 opportunities** |
-| `neutral` × `per_handoff` | 0 of 3 opportunities |
+Verdicts flipped across repeats on 0 of 5 `enumerated` opportunities, **1 of 2**
+`neutral` × `end_monitor` opportunities, and 0 of 3 `neutral` × `per_handoff`.
 
 §10 says in advance that if instability is comparable to the between-scheme
 difference, the primary is not resolvable at any reachable n. **This is the
@@ -354,31 +381,42 @@ treatment are in Appendix A, as the submission form requires.
 
 ## 7. References
 
-From §2. **Only entries verified against the source appear here**; the
-verification table is `docs/citation-check.md`.
+All verified against the source; the table is `docs/citation-check.md`.
 
-1. Prabhjot Singh and Bhushan Pawar. *The Hallucination Snowball: Modeling
-   Error Propagation as State Transitions in Multi-Agent LLM Pipelines.*
-   arXiv:2608.14588v1, 2026.
-2. Sugam Panthi and Rabab Abdelfattah. *Outcome Monitors: Recovery Affordances
-   for Silent Tool Failures.* arXiv:2608.19303v1, 2026.
-3. Elle Najt, Colin Toft, Tyler Tracy, Fabien Roger and Joe Benton.
-   *SLEIGHT-Bench: A Benchmark of Evasion Attacks Against Agent Monitors.*
-   arXiv:2605.16626, 2026.
-4. Devansh Singh, Shreya Gopalan and Sundaraparipurnan Narayanan. *Silent
-   Failures in Agent–Tool Interaction: An Audit of ToolUniverse.* 2026.
-5. Yue Zhao. *CatchBench: When Can an Agent Failure Be Caught?* Preprint, 2026.
+1. Laksh Advani. *From Confident Closing to Silent Failure: Characterizing
+   False Success in LLM Agents.* Workshop on Failure Modes in Agentic AI,
+   ICML, 2026. arXiv:2606.09863.
+2. Iván Arcuschin, Jett Janiak, Robert Krzyzanowski, Senthooran Rajamanoharan,
+   Neel Nanda and Arthur Conmy. *Chain-of-Thought Reasoning in the Wild Is Not
+   Always Faithful.* arXiv:2503.08679, 2025.
+3. Martin Hiller, Arshad Jhumka and Neeraj Suri. *An Approach for Analysing
+   the Propagation of Data Errors in Software.* DSN, 2001.
+4. Yibo Hu. *Silence Is Endorsement: Verification-Status Laundering in LLM
+   Agent Pipelines.* arXiv:2609.20211, 2026.
+5. Jen-Tse Huang, Jiaxu Zhou, Tailin Jin, Xuhui Zhou, Zixi Chen, Wenxuan Wang,
+   Youliang Yuan, Michael Lyu and Maarten Sap. *On the Resilience of LLM-Based
+   Multi-Agent Collaboration with Faulty Agents.* ICML, PMLR 267:26202–26226,
+   2025.
 6. Jurgis Kemeklis and Nikhil Vemuri. *Omission Attacks: When Doing Nothing Is
    the Attack.* Apart Research AI Control Hackathon, 2026.
 7. Tomek Korbak et al. *Chain of Thought Monitorability: A New and Fragile
    Opportunity for AI Safety.* arXiv:2507.11473, 2025.
-8. Miles Turpin et al. *Language Models Don't Always Say What They Think.*
-   arXiv:2305.04388, 2023.
-
-`<<REMAINING_REFERENCES>>` — the entries from Soumyajit's text still awaiting
-titles before they can be verified: Huang et al. 2025, Hu 2026, Sun et al.
-2024, Advani 2026, Hiller/Jhumka/Suri 2001, Arcuschin et al. 2025, plus FakeLab
-(arXiv 2607.07368) and SCHEME (arXiv 2605.29178), verified by the author.
+8. Elle Najt, Colin Toft, Tyler Tracy, Fabien Roger and Joe Benton.
+   *SLEIGHT-Bench: A Benchmark of Evasion Attacks Against Agent Monitors.*
+   arXiv:2605.16626, 2026.
+9. Sugam Panthi and Rabab Abdelfattah. *Outcome Monitors: Recovery Affordances
+   for Silent Tool Failures.* arXiv:2608.19303, 2026.
+10. Devansh Singh, Shreya Gopalan and Sundaraparipurnan Narayanan. *Silent
+    Failures in Agent–Tool Interaction: An Audit of ToolUniverse.* 2026.
+11. Prabhjot Singh and Bhushan Pawar. *The Hallucination Snowball: Modeling
+    Error Propagation as State Transitions in Multi-Agent LLM Pipelines.*
+    arXiv:2608.14588, 2026.
+12. Jimin Sun, So Yeon Min, Yingshan Chang and Yonatan Bisk. *Tools Fail:
+    Detecting Silent Errors in Faulty Tools.* arXiv:2406.19228, 2024.
+13. Miles Turpin et al. *Language Models Don't Always Say What They Think.*
+    arXiv:2305.04388, 2023.
+14. Yue Zhao. *CatchBench: When Can an Agent Failure Be Caught?* Preprint,
+    2026.
 
 ## Appendix A — Limitations and Dual-Use / Ethical Considerations
 
