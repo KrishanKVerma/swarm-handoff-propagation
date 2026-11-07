@@ -65,20 +65,19 @@ and withdrew it; amendment 16 records the withdrawal and the sequence.
 **DRAFT — rewrite in the author's voice.**
 
 A verifier that never looks is indistinguishable, in every log it produces,
-from one that looked and found nothing. Both emit the same clean result. The
-difference is invisible to the person reading the output and invisible to the
-reviewer who confirms that monitoring exists, and it is not a hypothetical
-distinction: in our neutral condition the checkers did not merely miss the
-failure, they returned an affirmative judgement that nothing was wrong.
+from one that looked and found nothing. Both emit the same clean result, and
+the difference is invisible to the person reading the output and to the
+reviewer who confirms that monitoring exists. It is not hypothetical: in our
+neutral condition the checkers did not merely miss the failure, they returned
+an affirmative judgement that nothing was wrong.
 
-The failure class is real outside the laboratory. An audit of ToolUniverse
-found 91 failures across 198 candidate cases, with 7 of 15 tools failing on
-more than half of theirs, and most of them silent at the point of use. A tool
-that returns a success-shaped response for an action that did not happen leaves
-the agent nothing to report but success. That is why this is a measurement
+The failure class is real outside the laboratory — an audit of ToolUniverse
+found 91 failures across 198 candidate cases, most silent at the point of use.
+A tool returning a success-shaped response for an action that did not happen
+leaves the agent nothing to report but success, which makes this a measurement
 problem rather than a deception problem: the agent's account of its own belief
-is accurate, and what is false is a claim about the world that nothing in the
-transcript contradicts.
+is accurate, and what is false is a world-state claim nothing in the transcript
+contradicts.
 
 A 160-run reliability harness of ours (`github.com/KrishanKVerma/bedrock`), in
 which an agent reported every failure as a success, and parts of this
@@ -111,79 +110,59 @@ Drafted by Soumyajit Karmakar; every citation checked against the source
 
 Error propagation in multi-agent LLM systems has mostly been studied with
 content errors. Huang et al. (2025) inject mistakes into agents' responses and
-compare collaboration structures, finding a hierarchical structure most
-resilient at a 5.5% performance drop against 10.5% and 23.7% for the others;
-an added Inspector agent that reviews and corrects messages recovers up to
-96.4% of the injected errors. **Singh and Pawar (2026) is the result this
-study builds on**, and the reason its registered primary endpoint was withdrawn
-(§1): they inject numerical hallucinations after the first stage of a
-four-agent linear pipeline, compare verification gates at every handoff against
-a single end-of-pipeline check across 346 injected failures, and model
-propagation as a Markov chain of per-handoff escape probabilities. Their errors
-are false *content* that downstream agents transform until it can no longer be
-checked, and their gates have ground-truth access and repair what they find.
-Hu (2026) documents a related failure at handoffs: an authorization claim
-survives while the record that it was never verified is lost, and downstream
-monitors then approve the action — removing an "(UNVERIFIED)" marker while
-keeping the claim raised risky approval from 0.052 to 0.601 on one model and
-0.089 to 0.975 on another. Where to place error detectors also has a long
-history in dependable systems; Hiller, Jhumka and Suri (2001) use fault
-injection to estimate each module's error permeability and place detection
-mechanisms accordingly.
+find a hierarchical structure most resilient (5.5% performance drop against
+10.5% and 23.7%), with an Inspector agent recovering up to 96.4% of injected
+errors. **Singh and Pawar (2026) is the result this study builds on, and the
+reason its registered primary was withdrawn** (§1): across 346 injected
+hallucinations in a four-agent pipeline they show boundary gates at every
+handoff cut failure survival from 58.4% to 16.2% against one end-of-pipeline
+check. Their errors are false *content* that downstream agents transform, and
+their gates have ground-truth access and repair what they find. Hu (2026)
+documents the adjacent failure: an authorization claim survives a handoff while
+the record that it was never verified is lost, and removing an "(UNVERIFIED)"
+marker raised risky approval from 0.052 to 0.601 on one model. Detector
+placement has a longer history in dependable systems — Hiller, Jhumka and Suri
+(2001) estimate each module's error permeability by fault injection and place
+detectors accordingly.
 
-A second line of work concerns failures an agent cannot see or does not report.
-Most tool failures are silent and models over-trust tool outputs, with smaller
-models allowing errors to pass (Sun et al., 2024). Agents frequently claim
-completion that the environment state contradicts — 616 of 1,730 tau2-bench
-failures, 35.6% — and LLM judges reading the transcripts largely fail to catch
-it, with no configuration across five judges and five prompt strategies
-exceeding AUROC 0.65 (Advani, 2026). Such failures also occur in deployed tool
-ecosystems: an audit of ToolUniverse found 91 failures across 198 candidate
-cases, with 7 of 15 tools failing on more than half (Singh, Gopalan and
-Narayanan, 2026). **The injection design we use is not ours alone.** Panthi and
+A second line concerns failures an agent cannot see or does not report. Most
+tool failures are silent and models over-trust tool outputs (Sun et al., 2024);
+agents claim completion the environment contradicts in 616 of 1,730 tau2-bench
+failures, and LLM judges reading the transcripts never exceed AUROC 0.65
+(Advani, 2026); and an audit of ToolUniverse found 91 failures across 198
+candidate cases, 7 of 15 tools failing on more than half (Singh, Gopalan and
+Narayanan, 2026). **Our injection design is not ours alone:** Panthi and
 Abdelfattah (2026) inject faults only into the text the model observes, leaving
-environment state unchanged so the evaluator scores the truth, and vary warning
-salience and timing; their setting is a single acting agent with a
-deterministic invariant checker, and their outcome is recovery rather than
-detection. CatchBench (Zhao, 2026) asks when a failure is catchable at all by
-varying the auditor's information state rather than the verifier's placement.
+environment state unchanged, and vary warning salience — in a single-agent
+setting, with a deterministic checker, measuring recovery rather than
+detection. CatchBench (Zhao, 2026) asks when a failure is catchable by varying
+the auditor's information state rather than the verifier's placement. On
+monitoring, Kemeklis and Vemuri (2026) show action-scrutinising monitors miss
+harm caused by actions never taken, and SLEIGHT-Bench (Najt et al., 2026)
+reports that targeted prompts help some blind-spot categories while no single
+prompt covers all — the result closest to ours. Chain-of-thought monitoring
+assumes evidence appears in what the agent says (Korbak et al., 2025), which
+unfaithful reasoning already strains (Turpin et al., 2023; Arcuschin et al.,
+2025); our setting strains it from the other side, where the account is
+faithful and the evidence never enters the agent's context.
 
-On the monitoring side, Kemeklis and Vemuri (2026) show that monitors
-scrutinising an agent's actions miss harm caused by actions never taken, while
-checks on the final system state catch it. SLEIGHT-Bench (Najt et al., 2026)
-finds frontier monitors miss many evasion attacks — at a 1% false-positive rate
-an Opus 4.6 monitor never catches 20 of 40 across 10 trials — and reports that
-targeted prompts help some blind-spot categories while no single prompt covers
-all of them, which is the result closest to ours. Chain-of-thought monitoring
-rests on the premise that evidence of a problem appears in what the agent says
-(Korbak et al., 2025), and unfaithful reasoning already strains that premise
-(Turpin et al., 2023; Arcuschin et al., 2025). Our setting strains it from the
-other side: the agent's account is faithful, and the evidence never enters its
-context.
-
-**What is new here.** To our knowledge no prior work injects a silent tool
-failure into a *multi-agent chain* and tracks the resulting honest but false
-claim about world state agent by agent — Panthi and Abdelfattah's injection is
-the same construction in a single-agent setting. Our contribution is not that
-design but what it exposed: that the prompt constraint which makes a monitor's
-output machine-adjudicable also determines whether the monitor inspects the
-artifact at all.
+**What is new.** To our knowledge no prior work injects a silent tool failure
+into a *multi-agent chain* and tracks the resulting honest but false
+world-state claim agent by agent — Panthi and Abdelfattah's injection is the
+same construction with one agent. Our contribution is not that design but what
+it exposed.
 
 ## 3. Methods
 
 ### Design
 
-A four-stage pipeline. **A** fetches a record and writes it to a file, **B**
-transforms, **C** validates, **D** summarises.
-
-**The injected failure.** A's write tool returns a success-shaped response and
-leaves the file unchanged. The response is built from the call's arguments and
-never read back from disk, so no field, status or error differs between the
-injected and clean modes. A truthfully reports a false belief.
-
-The handoff carries the content and no agent re-reads the file; without that
-the failure dies at step two by the task's own mechanics. Verifiers flag only,
-never stopping or repairing the chain, so all four steps run every time. Every
+A four-stage pipeline: **A** fetches a record and writes it to a file, **B**
+transforms, **C** validates, **D** summarises. A's write tool returns a
+success-shaped response and leaves the file unchanged; the response is built
+from the call's arguments and never read back from disk, so no field differs
+between injected and clean modes. The handoff carries the content and no agent
+re-reads the file, without which the failure dies at step two by the task's own
+mechanics. Verifiers flag only, never stopping or repairing the chain. Every
 checker gets a read tool on the artifact, is never told what the file should
 contain, never sees the oracle's verdict, and is never instructed to read —
 tool access is identical across both schemes and both prompt levels. The
@@ -200,16 +179,17 @@ passes on is correct, and only its claim about the state of the world is false.
 absence propagating. That is why this design reduces to a single question —
 does anything read the artifact — and theirs does not.
 
-**Measurement.** Propagation is one exact containment match of the reference
-code in an agent's asserted fields, k ∈ {2,3,4}; detection is a flag plus at
-least one structured claim the oracle's reading of the file says is true.
-Neither reads free text, so neither has a scorer. **Two deviations, both logged
-before the runs:** the tool loop is scripted runner-side, so A receives its
-tool results rather than choosing to invoke them (amendment 12), and the
-artifact begins as an empty JSON object, which makes `artifact_empty` and
-`artifact_mismatch` true under injection and `artifact_missing` false. The
-pre-registration is public and carries every rule with its reasoning and
-amendment history, so this report states each once and points there.
+**Measurement.** Propagation is one exact containment match of a 12-character
+random reference code in an agent's asserted fields, k ∈ {2,3,4}; detection is
+a flag plus at least one structured claim the oracle's deterministic file read
+says is true. Neither reads free text, so neither has a scorer. **Two
+deviations, both logged before the runs:** the tool loop is scripted
+runner-side, so A receives its tool results rather than choosing to invoke them
+(amendment 12), and the artifact begins as an empty JSON object, making
+`artifact_empty` and `artifact_mismatch` true under injection and
+`artifact_missing` false. The pre-registration is public and carries every rule
+with its reasoning and amendment history; this report states each once and
+points there.
 
 ![Figure 1. The four-stage chain. The dashed amber line is the only write to the file, and under injection it does not happen: the tool returns success and the file stays empty. No agent in the chain re-reads the file, so the handoff message is the record's only carrier. Checkers may read it; nothing compels them to.](figures/chain.svg)
 
@@ -320,10 +300,6 @@ the neutral level they read the artifact in **0 of 2** opportunities under
 reported. They did not pick a wrong category either — **every** neutral
 non-detection was an affirmative `no_discrepancy`, so the checkers concluded
 that nothing was wrong.
-
-Verdict instability appeared as soon as there was any variance to have: **1 of
-2** neutral `end_monitor` opportunities flipped across repeats, while the
-enumerated arm's 0 of 5 is zero variance rather than demonstrated stability.
 
 The result rests on a single observation — a second neutral detection would
 have made it unresolved by our own pre-registered table — and it licenses no
