@@ -2,17 +2,50 @@
 
 Apart Research Swarm Alignment Hackathon · 6–8 November 2026
 
-**Draft. §2 and §6 are not written here — they are the author's prose and are
-marked `<<AUTHOR>>`. Everything else is filled from the traces. Every number
-below is reproduced by `python3 -m analysis.recompute runs/smoke`; none was
-typed in by hand.**
+**Draft.** Every number is reproduced by
+`python3 -m analysis.recompute runs/smoke`; none was typed in by hand.
+
+**§2, §6, the abstract and the title are marked `DRAFT — rewrite in the
+author's voice`.** They are drafted against the numbers so the shape and the
+claims can be checked, and they are to be rewritten before the report ships,
+not published as they stand. Only `<<TITLE>>` and `<<AUTHORS_AFFILIATIONS>>`
+remain genuinely blank.
 
 ---
 
 ## 0. Front matter
 
-- **Title.** `<<TITLE>>`
-- **Abstract, 150–250 words.** `<<ABSTRACT>>` — written last, after §6.
+- **Title.** `<<TITLE>>` — three candidates, in order of preference:
+  1. *Enumeration elicits inspection: what a monitor is told to look for
+     decides whether it looks*
+  2. *The instrument measured itself first: a pre-registered pilot on
+     unverified claims in agent chains*
+  3. *How far an unverified success claim travels through an agent chain*
+     (the registered question; weakest, because it is not what we answered)
+- **Abstract, 150–250 words.** **DRAFT — rewrite in the author's voice.** 203
+  words.
+
+> Agents in a chain hand each other claims, not verified state. We inject a
+> silent write failure into the first of four agents — the tool returns a
+> success-shaped response and the file stays empty — and measure how far the
+> resulting false claim travels before anything catches it. Detection is
+> adjudicated mechanically: a checker that flags must emit a claim from a
+> closed set, and a claim counts only if the file itself says it is true.
+>
+> The first thing the instrument measured was a flaw in the instrument. That
+> closed set lives in the checker's prompt, and naming artifact-level failures
+> in it changed whether the checker inspected the artifact at all: 5 of 5
+> opportunities ended in an adjudicated detection when the claim set named
+> them, against 1 of 5 when the same claims sat among plausible alternatives
+> (two-sided Fisher exact p = 0.0476, under a reading fixed before the run).
+> The mechanism is reading rather than reporting — the neutral checkers mostly
+> never looked, and the one that looked, reported.
+>
+> No endpoint was reached: six live runs, no cell at its registered n, no
+> between-scheme comparison. The pre-registration carries fifteen dated
+> amendments, eight of them corrections to our own document, including the
+> confound above and a p-value we had computed wrongly and fixed before we
+> used it.
 - **Authors and affiliations.** `<<AUTHORS_AFFILIATIONS>>`
 - **Prior-work statement.** See §2 and `PREREGISTRATION.md` §0, which carries
   the file list, line counts and commit timestamps.
@@ -35,11 +68,25 @@ rather than about agents.
 
 ## 2. Why it matters
 
-`<<AUTHOR>>`
+**DRAFT — rewrite in the author's voice.**
 
-*Must contain: handoffs carry claims, not verified state; the 160-run corpus
-and the bedrock harness as motivation only, declared preexisting and supplying
-no data; and the prior-work declaration in this report's own voice.*
+When one agent hands work to another, what crosses the boundary is a claim.
+Agent A reports that it wrote the file; agent B receives that report and has no
+way to distinguish a completed task from a claimed one. Everything downstream
+is built on the claim, and nothing in the chain is obliged to check it against
+the artifact. This is not a failure of honesty — an agent whose write tool
+returns success has no basis for saying anything else — which is why it is a
+measurement problem rather than a deception problem.
+
+The question is worth asking because of a result we are not using here. A
+160-run reliability harness (`github.com/KrishanKVerma/bedrock`) produced an
+agent that reported every failure as a success across 4 tasks and 2 models.
+**That corpus and that harness predate this sprint, are declared as prior work,
+and supply no data to this study**; they are the reason the question is worth
+asking and nothing more. The full prior-work declaration — which files, how
+many lines, which commit and which timestamp — is in `PREREGISTRATION.md` §0,
+including the parts of this repository's runner that predate the sprint by
+roughly fifteen hours and are declared as preexisting preparation.
 
 ## 3. Design
 
@@ -200,12 +247,31 @@ reading a ceiling as a measurement.
 
 ## 6. What we found
 
-`<<AUTHOR>>`
+**DRAFT — rewrite in the author's voice.**
 
-*Three to five sentences. Each must be traceable to a number in §5. The
-candidates: the instrument reached ceiling end to end; the thing that made
-detection machine-decidable was also eliciting it; the mechanism is reading,
-not reporting; and whether this design can resolve anything is open.*
+Enumerating candidate failure modes in the checker's prompt changed whether the
+checker inspected the artifact at all: **5 of 5** opportunities ended in an
+adjudicated detection when the claim set named artifact-level failures, against
+**1 of 5** when the same claims sat among plausible alternatives (two-sided
+Fisher exact **p = 0.0476**, resolved under the reading fixed before the run).
+
+The mechanism is in whether the checkers looked, not in what they reported: at
+the neutral level they read the artifact in **0 of 2** opportunities under
+`end_monitor` and **1 of 3** under `per_handoff`, and the one that read,
+reported. They did not pick a wrong category either — **every** neutral
+non-detection was an affirmative `no_discrepancy`, so the checkers concluded
+that nothing was wrong.
+
+Verdict instability appeared as soon as there was any variance to have: **1 of
+2** neutral `end_monitor` opportunities flipped across repeats, while the
+enumerated arm's 0 of 5 is zero variance rather than demonstrated stability.
+
+The result rests on a single observation — a second neutral detection would
+have made it unresolved by our own pre-registered table — and **nothing here
+licenses a claim about either verification scheme, about the independence of
+detection opportunities, or about the rate at which agents propagate
+unverified claims.** No endpoint was computed and no cell reached its
+registered n.
 
 ## 7. Limitations
 
@@ -356,7 +422,8 @@ is addressed in §7 and §8.
 
 ## Before submitting
 
-- [ ] `<<AUTHOR>>` sections written: §2, §6, abstract.
+- [ ] §2, §6, the abstract and the title **rewritten in the author's voice**;
+      every `DRAFT — rewrite` line removed.
 - [ ] No `<<` remains.
 - [ ] Every rate carries its denominator; no zero without a bound.
 - [ ] Amendment count here matches `PREREGISTRATION.md` §13 (fifteen).
