@@ -2,21 +2,15 @@
 
 ### Prompt enumeration determines whether an LLM monitor inspects the artifact
 
-Apart Research Swarm Alignment Hackathon · 6–8 November 2026
+`<<AUTHORS_AFFILIATIONS>>` — names and affiliations, one per line.
 
-**Draft.** Every number is reproduced by
+With Apart Research
+
+**Draft.** Mapped onto Apart's official template. Every number is reproduced by
 `python3 -m analysis.recompute runs/smoke`. Sections marked `DRAFT` are to be
 rewritten in the author's voice before shipping.
 
----
-
-## 0. Front matter
-
-- **Title.** *What makes a boundary gate look? Prompt enumeration determines
-  whether an LLM monitor inspects the artifact* — **DRAFT**, set as the header
-  above so the document no longer opens on the withdrawn question.
-  Alternative: *A gate that isn't told what to look for doesn't look*.
-- **Abstract, 150–250 words.** **DRAFT — rewrite in the author's voice.**
+## Abstract
 
 > **A verifier that is not told what to look for mostly does not look.**
 > Naming candidate failure modes in an LLM checker's prompt moved detection of
@@ -42,26 +36,6 @@ rewritten in the author's voice before shipping.
 > which withdraws our own registered primary. **The constraint that made our
 > detection metric machine-adjudicable was eliciting the behaviour it
 > measured.**
-
-- **Authors and affiliations.** `<<AUTHORS_AFFILIATIONS>>`
-- **Contributions.** Krishan Kumar Verma: measurement design, pre-registration
-  and amendments, injection, oracle, canary scorer, checker tools, prompts,
-  live runner, analysis, report. Soumyajit Karmakar: related work; LA-hub
-  presentation. From outside the current team, recording work done before the
-  project split: Ahmed Tariq (trace format and offline runner, including the
-  amendment 7 checker-access and flag-isolation implementation, declared
-  preexisting from 5 November where applicable; raised the flag-only rule,
-  the checker-evidence question and flag isolation, and both p₁ definitions),
-  Supriya Kamatagi (the propagation scoring enum), Nico Smith (the geometric
-  framing and the independence question), Dora Zelenyanszki (the p₁ / p₂
-  decomposition).
-- **Prior-work statement.** See §2 and `PREREGISTRATION.md` §0, which carries
-  the file list, line counts and commit timestamps.
-
-> **Tooling.** Implementation was AI-assisted. The research design, the
-> pre-registration and the decisions recorded in its amendment log, the
-> analysis and this write-up are the team's, and the team is responsible for
-> everything in this report.
 
 ## 1. Introduction
 
@@ -111,6 +85,24 @@ which an agent reported every failure as a success, and parts of this
 repository's runner both predate the sprint and are **declared as prior work
 supplying no data to this study**. The full declaration — files, line counts,
 commits and timestamps — is in `PREREGISTRATION.md` §0.
+
+**Our main contributions are:**
+
+- **The enumeration confound.** Naming candidate failure modes in an LLM
+  checker's prompt determines whether it inspects the artifact at all — 5 of 5
+  detections against 1 of 5, two-sided Fisher exact p = 0.0476. The constraint
+  that makes a monitor's output machine-adjudicable also elicits the behaviour
+  the metric measures.
+- **A failure shape that isolates inspection.** A silent tool failure in which
+  the agent's report is truthful about its own belief, so nothing in the
+  transcript is wrong and detection reduces to whether anything reads the
+  artifact. An absence propagating rather than an error.
+- **Scorer-free measurement.** Propagation by exact containment of a random
+  reference code; detection by structured claims adjudicated against a
+  deterministic file read. Neither endpoint reads free text.
+- **A pre-registration that records its own failure**, including the
+  withdrawal of its registered primary on finding that published work had
+  already answered it.
 
 ## 2. Related Work
 
@@ -177,7 +169,7 @@ design but what it exposed: that the prompt constraint which makes a monitor's
 output machine-adjudicable also determines whether the monitor inspects the
 artifact at all.
 
-## 3. Methodology
+## 3. Methods
 
 ### Design
 
@@ -311,7 +303,7 @@ difference (no cell reached its registered n, and pilot runs enter no endpoint
 by design); the false-positive rate (no `clean` cell was run); and the refusal
 rate (the category is defined and not instrumented, amendment 12).
 
-## 5. Discussion
+## 5. Discussion and Limitations
 
 **DRAFT — rewrite in the author's voice.**
 
@@ -353,7 +345,7 @@ prompt enumerated and not, would settle it; six runs cannot. That is the
 experiment we would run next, alongside a third arm giving the output format
 and no options at all, which is the clean version of the test we ran.
 
-## 6. Limitations and Dual-Use / Ethical Considerations
+### Limitations
 
 Three govern how every number here should be read. **Propagation is near-1 by
 construction**, because the injection leaves no signal unless something reads
@@ -363,10 +355,60 @@ is "the checkers did not read", never "checkers do not bother to verify".
 **The one resolved comparison is about our instrument** — six live runs, no
 endpoint reached, the registered primary withdrawn.
 
-The full list, what this design cannot establish, and the dual-use and ethics
-treatment are in Appendix A, as the submission form requires.
+The full list, and what this design cannot establish, are in Appendix A with
+the dual-use and ethics treatment the submission form requires.
 
-## 7. References
+### Future Work
+
+Two experiments follow directly. A third arm giving the checker the output
+format with **no** options at all, which is the clean version of the test we
+ran — ours removed the artifact spotlight but added three alternatives, so it
+shows *pointing at the artifact versus offering alternatives*, not
+*enumeration versus none*. And a boundary-gate study at Singh and Pawar's n,
+run twice with the gate prompt enumerated and not, which would settle how much
+of a gate's effectiveness travels with what it is told.
+
+## 6. Conclusion
+
+A verifier's prompt is a parameter of its sensitivity, and an inexpensive one.
+The same model, the same tool and the same evidence moved from 1 of 5
+detections to 5 of 5 on a change of wording, which puts prompt wording in the
+same class as model choice for anyone deploying a monitor, at none of the cost.
+Where a verifier sits is settled; what it is told is not, and on this evidence
+it may matter as much.
+
+The finding arrived as a defect in our own instrument. We had constrained the
+checker to a closed set of claims so detection could be adjudicated
+mechanically, and that set — sitting in the checker's prompt — was telling the
+checker where to look. Anyone making monitor outputs machine-adjudicable by
+constraining them is doing the same thing to their own measurement, and it is
+invisible until the instrument runs. Six live runs cannot establish how general
+that is. They were enough to find it.
+
+## Code and Data
+
+- **Code repository:** `github.com/KrishanKVerma/swarm-handoff-propagation` —
+  pre-registration with its full amendment log, injection, oracle, scorer,
+  checker tools, prompts, live runner, analysis, and the traces.
+- **Data:** every trace, step record and checker evaluation is in the
+  repository. `python3 -m analysis.recompute runs/smoke` reproduces every
+  number in this report.
+- **Prior work declared as preexisting:** `PREREGISTRATION.md` §0 carries the
+  file list, line counts and commit timestamps.
+
+## Author Contributions
+
+Krishan Kumar Verma: measurement design, pre-registration and amendments,
+injection, oracle, canary scorer, checker tools, prompts, live runner,
+analysis, report. Soumyajit Karmakar: related work; LA-hub presentation.
+From outside the current team, recording work contributed before the project
+split: Ahmed Tariq (trace format and offline runner, including the amendment 7
+checker-access and flag-isolation implementation and the amendment 8 matcher,
+declared preexisting from 5 November where applicable), Supriya Kamatagi (the
+propagation scoring enum), Nico Smith (the geometric framing and the
+independence question), Dora Zelenyanszki (the p₁ / p₂ decomposition).
+
+## References
 
 All verified against the source; the table is `docs/citation-check.md`.
 
@@ -563,6 +605,16 @@ pre-registration unaltered.
 p = 0.0476, amendment 15 records that **no further runs will be added to that
 comparison**: extending n after seeing a p-value just under 0.05 is optional
 stopping, and the refusal is in the log rather than only in our intentions.
+
+## LLM Usage Statement
+
+Implementation was AI-assisted. The research design, the pre-registration and
+the decisions recorded in its amendment log, the analysis and this report are
+the team's, and the team is responsible for everything in it. Every number was
+recomputed from the traces by the command in Code and Data, and every citation
+was checked against its source before use; the verification table is in
+`docs/citation-check.md`. One figure quoted earlier in the project could not be
+verified and was withdrawn rather than softened.
 
 ---
 
