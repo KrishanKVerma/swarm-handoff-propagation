@@ -55,7 +55,9 @@ remain genuinely blank.
 > analysis and this write-up are the team's, and the team is responsible for
 > everything in this report.
 
-## 1. What we asked
+## 1. Introduction
+
+### What we asked
 
 How far does an unverified success claim travel through a chain of agents
 before anything catches it, and does a verifier at every handoff catch it
@@ -66,7 +68,7 @@ No endpoint was reached. What we have is an instrument, a pre-registration with
 fifteen dated amendments, and one resolved finding — about the instrument
 rather than about agents.
 
-## 2. Why it matters
+### Why it matters
 
 **DRAFT — rewrite in the author's voice.**
 
@@ -88,7 +90,16 @@ many lines, which commit and which timestamp — is in `PREREGISTRATION.md` §0,
 including the parts of this repository's runner that predate the sprint by
 roughly fifteen hours and are declared as preexisting preparation.
 
-## 3. Design
+## 2. Related Work
+
+`<<RELATED_WORK>>` — Soumyajit Karmakar's section, posted
+2026-11-07 13:54. Every citation in it is checked against the source before
+it ships; the verification table is in `docs/citation-check.md`. Anything
+unconfirmed is cut, not softened.
+
+## 3. Methodology
+
+### Design
 
 A four-stage pipeline. **A** fetches a record and writes it to a file, **B**
 transforms, **C** validates, **D** summarises.
@@ -121,6 +132,12 @@ scorer, scoped to k ∈ {2,3,4}.
 closed set; detection is a flag plus at least one claim the oracle's reading of
 the file says is true. No text is parsed.
 
+**The pre-registration carries the design in full and is public.** Every rule
+above — the match rule, the adjudication set, the exclusion categories, the
+power table — is stated there with its reasoning and its amendment history, so
+this report states each once and points there rather than reproducing it. That
+the document is complete enough to be pointed at is itself part of the claim.
+
 **Two deviations from the above, both logged before the runs.** The tool loop
 is scripted runner-side — the runner calls A's tools and reports the results to
 A, so A does not choose to invoke them (amendment 12). The artifact begins as an
@@ -129,7 +146,7 @@ under injection and `artifact_missing` is false.
 
 **Figure 1** — `figures/chain.svg`.
 
-## 4. What was fixed in advance
+### What was fixed in advance
 
 Fifteen amendments, each timestamped, superseded text struck in place and left
 readable. Entries 1–13 precede any study data. Entry 14 follows the first three
@@ -152,7 +169,7 @@ p = 0.0476, amendment 15 records that **no further runs will be added to that
 comparison**: extending n after seeing a p-value just under 0.05 is optional
 stopping, and the refusal is in the log rather than only in our intentions.
 
-## 5. Results
+## 4. Results
 
 **Pilot runs enter no endpoint (§10). Nothing below is a study result about
 agents.** The primary endpoint, the survival curve and the between-scheme
@@ -165,26 +182,21 @@ frozen in every trace's `provider_metadata`. 6 live runs, all `inject`, all
 exclusions.** Three earlier runs against `gemini-2.5-flash` are declared in
 amendment 13 and are not study data.
 
-### 5.1 The pilot was stopped at three runs
+### 4.1 The pilot was stopped at three runs
 
 All five confirmations §10 required were met at n = 3: the injection fired, the
 oracle read correctly, the canary test decided cleanly, the stability check had
 input from both checker roles, and the adjudicator resolved claims against
 oracle state.
 
-| quantity (enumerated prompt) | value |
-|---|---|
-| p₁, read rate at repeat zero | **5 of 5** (Wilson 95% CI 56.6–100%) |
-| p₂, reported given a read | **5 of 5** |
-| p = p₁ × p₂ | 1.0 |
-| claims emitted | `artifact_mismatch`, 10 of 10 evaluations |
-
-**Both components are saturated, not only p₁: every checker that read also
-reported.** At p = 1 the independence secondary is vacuous — 1 − (1 − 1)³ = 1,
+At the enumerated prompt, both components were saturated: checkers read at
+**5 of 5** opportunities (Wilson 95% CI 56.6–100%) and reported at **5 of 5**
+of those, so p = 1.0, with all ten evaluations claiming `artifact_mismatch`.
+**Every checker that read also reported.** At p = 1 the independence secondary is vacuous — 1 − (1 − 1)³ = 1,
 with no shortfall to interpret. **5 of 5 does not establish p = 1**; the lower
 bound is 56.6%.
 
-### 5.2 The enumeration confound
+### 4.2 The enumeration confound
 
 The claim set that amendment 10 introduced to make detection machine-decidable
 lives in the checker's prompt and names artifact-level failures. The instrument
@@ -216,7 +228,7 @@ nothing was wrong.
 **p = 0.0476 rests on a single observation.** One more neutral detection — 2 of
 5 — gives p ≈ 0.167, which the pre-registration calls unresolved.
 
-### 5.3 Instrument stability
+### 4.3 Instrument stability
 
 | arm | verdict flips across repeats |
 |---|---|
@@ -235,17 +247,16 @@ saturated: the same flag and the same claim ten times out of ten. That is zero
 variance, not demonstrated stability, and reading it as stability would be
 reading a ceiling as a measurement.
 
-### 5.4 Not computed
+### 4.4 Not computed
 
-| quantity | why |
-|---|---|
-| primary endpoint, uncaught at step four | no cell reached its registered n; pilot runs enter no endpoint |
-| survival curve | same |
-| between-scheme difference | smallest cell is 1 run against the 30 per cell §8 requires |
-| false-positive rate per scheme | no `clean` cell was run |
-| refusal rate | the category is defined and **not instrumented** (amendment 12) |
+The primary endpoint, the survival curve and the between-scheme difference are
+not computed: no cell reached its registered n, pilot runs enter no endpoint by
+design, and the smallest cell is 1 run against the 30 per cell the
+pre-registration requires. The false-positive rate is not computed because no
+`clean` cell was run, and the refusal rate is not computed because the category
+is defined and not instrumented (amendment 12).
 
-## 6. What we found
+## 5. Discussion
 
 **DRAFT — rewrite in the author's voice.**
 
@@ -273,7 +284,9 @@ detection opportunities, or about the rate at which agents propagate
 unverified claims.** No endpoint was computed and no cell reached its
 registered n.
 
-## 7. Limitations
+## 6. Limitations and Dual-Use / Ethical Considerations
+
+### Limitations
 
 - **Propagation is near-1 by construction.** The injection leaves no signal
   unless something reads the file, and the prompts require the reference code
@@ -296,7 +309,7 @@ registered n.
 - **One task family, one provider, one model, constructed failure, n = 6 live
   runs.**
 
-## 8. What this cannot establish
+### What this cannot establish
 
 The asymmetry. This design can show that a claim propagated uncaught. It cannot
 establish that a verification scheme is sufficient: it probes one failure shape,
@@ -305,7 +318,17 @@ and the space of silent failures is unbounded.
 And at this n it establishes nothing about agents at all. The one resolved
 comparison is about **our instrument**.
 
-## 9. Team and contributions
+### Dual use and ethics
+
+Stated in full in the appendix, as the submission form requires. In short: the
+finding is a lever in both directions, we judge the defensive use to dominate
+for reasons given there, and we name the case where that argument weakens.
+
+## 7. References
+
+`<<REFERENCES>>` — from §2. Only verified entries appear here.
+
+## 8. Team and contributions
 
 **On this submission:**
 
@@ -327,7 +350,7 @@ credits record work contributed before the project split.
   (amendment 7).
 - **Dora Zelenyanszki** — the p₁ / p₂ decomposition.
 
-## 10. Appendix — Limitations and Dual-Use / Ethical Considerations
+## Appendix A — Limitations and Dual-Use / Ethical Considerations
 
 **Required under this name by the submission form.**
 
