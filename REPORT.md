@@ -39,10 +39,10 @@ rewritten in the author's voice before shipping.
 > Pawar have an error propagating, we have an absence propagating, which
 > reduces detection to one question — does anything read the artifact?
 >
-> The constraint that made our detection metric machine-adjudicable was
-> eliciting the behaviour it measured. Six live runs, and a pre-registration
-> with sixteen dated amendments, one of which withdraws our own registered
-> primary.
+> Six live runs, and a pre-registration with sixteen dated amendments, one of
+> which withdraws our own registered primary. **The constraint that made our
+> detection metric machine-adjudicable was eliciting the behaviour it
+> measured.**
 
 - **Authors and affiliations.** `<<AUTHORS_AFFILIATIONS>>`
 - **Contributions.** Krishan Kumar Verma: measurement design, pre-registration
@@ -109,14 +109,11 @@ problem rather than a deception problem: the agent's account of its own belief
 is accurate, and what is false is a claim about the world that nothing in the
 transcript contradicts.
 
-We came to the question from the other side. A 160-run reliability harness
-(`github.com/KrishanKVerma/bedrock`, 4 tasks, 2 models) produced an agent that
-reported every failure as a success. **That corpus and that harness predate
-this sprint, are declared as prior work, and supply no data to this study**;
-they are the reason the question seemed worth asking and nothing more. The full
-prior-work declaration — which files, how many lines, which commit, which
-timestamp, including parts of this repository's runner that predate the sprint
-by roughly fifteen hours — is in `PREREGISTRATION.md` §0.
+A 160-run reliability harness of ours (`github.com/KrishanKVerma/bedrock`), in
+which an agent reported every failure as a success, and parts of this
+repository's runner both predate the sprint and are **declared as prior work
+supplying no data to this study**. The full declaration — files, line counts,
+commits and timestamps — is in `PREREGISTRATION.md` §0.
 
 ## 2. Related Work
 
@@ -335,14 +332,12 @@ deploying a monitor, at none of the cost. SLEIGHT-Bench reports the compatible
 result from the other direction: targeted prompts improve monitor performance
 on some blind-spot categories while no single prompt covers all of them.
 
-It also raises a question for the result we built on. If a gate's effectiveness
-depends this much on what it is told, part of Singh and Pawar's boundary-gate
-advantage may be a property of what their gates were told rather than of where
-they sat. **We cannot test that** — we did not run their comparison, and ours
-had no variance left to compare. It is a hypothesis their design could settle
-and ours cannot, and it is the thing we would run next, together with a third
-arm giving the output format and no options at all, which is the clean version
-of the test we ran.
+Their result also raises a question their design can answer and ours cannot:
+**how much of a gate's effectiveness travels with what it is told, rather than
+with where it sits.** A boundary-gate study at their n, run twice with the gate
+prompt enumerated and not, would settle it; six runs cannot. That is the
+experiment we would run next, alongside a third arm giving the output format
+and no options at all, which is the clean version of the test we ran.
 
 ## 6. Limitations and Dual-Use / Ethical Considerations
 
