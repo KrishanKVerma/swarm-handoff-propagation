@@ -385,12 +385,14 @@ that is. They were enough to find it.
 Krishan Kumar Verma: measurement design, pre-registration and amendments,
 injection, oracle, canary scorer, checker tools, prompts, live runner,
 analysis, report. Soumyajit Karmakar: related work; LA-hub presentation.
-From outside the current team, recording work contributed before the project
-split: Ahmed Tariq (trace format and offline runner, including the amendment 7
-checker-access and flag-isolation implementation and the amendment 8 matcher,
-declared preexisting from 5 November where applicable), Supriya Kamatagi (the
-propagation scoring enum), Nico Smith (the geometric framing and the
-independence question), Dora Zelenyanszki (the p₁ / p₂ decomposition).
+Ahmed Tariq: the trace format and the offline runner, begun 5 November and
+declared preexisting where applicable (§0), and during the sprint the
+amendment 7 checker-access and flag-isolation implementation and the
+amendment 8 containment matcher; he also raised the flag-only rule, the
+checker-evidence question and both p₁ definitions. Contributed before the
+project split and not on this submission: Supriya Kamatagi (the propagation
+scoring enum), Nico Smith (the geometric framing and the independence
+question), Dora Zelenyanszki (the p₁ / p₂ decomposition).
 
 ## References
 

@@ -31,18 +31,22 @@ Apart Research Swarm Alignment Hackathon, 6–8 November 2026.
 | Krishan Kumar Verma | measurement design, pre-registration and amendments, injection, oracle, canary scorer, checker tools, agent and checker prompts, live runner, analysis, report |
 | Soumyajit Karmakar | related work; LA-hub presentation |
 
-## Contributions from outside the current team
+## Other contributors
 
-The people below are **not on this submission**. The credits record work they
+**Ahmed Tariq** — the trace format and the offline runner, begun 5 November
+and declared preexisting where applicable (see Prior work), **and work during
+the sprint**: the Amendment 7 checker-access and flag-isolation
+implementation, and the Amendment 8 containment matcher, merged to `main` on
+7 November. He also raised the flag-only rule (amendment 3), the
+checker-evidence question and flag isolation (amendment 7), and both p₁
+definitions (amendment 8). His place on the submission is unresolved at the
+time of writing; this entry records what he contributed, not whether he is on
+the team.
+
+**The three below are not on this submission.** The credits record work
 contributed before the project split, and the work is theirs whether or not
 they are on the team.
 
-- **Ahmed Tariq** — the trace format and the offline runner, including the
-  Amendment 7 checker-access and flag-isolation implementation, on
-  `feat/offline-runner-traces`, declared preexisting from 5 November where
-  applicable (see Prior work). He also raised the flag-only rule
-  (amendment 3), the checker-evidence question and flag isolation
-  (amendment 7), and both p₁ definitions (amendment 8).
 - **Supriya Kamatagi** — the runner's propagation scoring enum,
   `PROPAGATED` / `NOT_PROPAGATED` / `MISSING_CANARY` / `INVALID_OUTPUT`
   (amendment 7).
