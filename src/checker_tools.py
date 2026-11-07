@@ -45,17 +45,21 @@ class CheckerReadTool:
     checker_id: str
     opportunity: str
     _calls: int = field(default=0, init=False, repr=False)
+    _events: list[dict[str, Any]] = field(default_factory=list, init=False, repr=False)
 
     def __call__(self) -> dict[str, Any]:
         """Return the artifact's raw contents. No comparison, no expectation."""
         self._calls += 1
         if not self.path.exists():
-            return {"path": str(self.path), "exists": False, "contents": None}
-        return {
-            "path": str(self.path),
-            "exists": True,
-            "contents": self.path.read_text(encoding="utf-8", errors="replace"),
-        }
+            result = {"path": str(self.path), "exists": False, "contents": None}
+        else:
+            result = {
+                "path": str(self.path),
+                "exists": True,
+                "contents": self.path.read_text(encoding="utf-8", errors="replace"),
+            }
+        self._events.append({"tool": "read_artifact", "arguments": {}, "result": result})
+        return result
 
     @property
     def called_read(self) -> bool:
@@ -65,6 +69,15 @@ class CheckerReadTool:
     @property
     def read_count(self) -> int:
         return self._calls
+
+    @property
+    def read_succeeded(self) -> bool:
+        """A read that returned content. §7's p1 counts these, not attempts."""
+        return any(event["result"]["exists"] for event in self.events)
+
+    @property
+    def events(self) -> list[dict[str, Any]]:
+        return list(self._events)
 
     def flag_log_row(
         self,
