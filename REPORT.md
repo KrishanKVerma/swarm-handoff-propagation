@@ -265,21 +265,98 @@ credits record work contributed before the project split.
 
 **Required under this name by the submission form.**
 
-- **Limitations.** §7 and §8, in full.
-- **Dual use.** `<<DUAL_USE>>` — **not written; nobody owns it.** It must
-  answer: what does a result showing that checkers verify only when pointed at
-  the problem hand to someone who wants their agent's claims to go unchecked?
-  The honest version names the asymmetry — a map of where verification is thin
-  is a map for evading it — and says what we think follows.
-- **Ethics.** No human subjects. Synthetic records only. No real system or
-  third-party service was the target of the injected failure.
+### Limitations
+
+§7 and §8, in full.
+
+### Dual use
+
+**The finding is a lever, and it turns both ways.** It is not "checkers with
+file access rarely check." It is narrower and more useful than that:
+**enumerating candidate failure modes in a monitor's prompt drives whether the
+monitor inspects the artifact at all** — 5 of 5 detections with the artifact
+named among the options, 1 of 5 without, two-sided Fisher exact p = 0.048 at
+five opportunities an arm. The mechanism is reading, not reporting: in the
+neutral arm the checkers mostly never looked.
+
+**The defensive reading.** Monitor sensitivity here is substantially a function
+of **prompt framing rather than model capability**. The same model, the same
+tool, the same evidence, and detection moves from one in five to five in five.
+That is directly actionable for anyone deploying a monitor, and the action is
+nearly free: name the failure modes you care about in the prompt. A team that
+believes its monitor is weak may have a wording problem rather than a model
+problem, and the cheap experiment — enumerate, re-run — is one afternoon.
+
+**The offensive reading, stated without softening.** The same result is a
+recipe for **monitoring that exists on paper and catches nothing.** Leave the
+monitor's prompt open-ended and it will not merely miss the discrepancy — it
+will return an affirmative "no discrepancy." Our neutral arm did exactly that,
+four times out of five, and it did not reach for the distractor options we gave
+it either. A monitor configured this way produces clean logs, satisfies a
+reviewer who checks that monitoring exists, and detects nothing. A map of where
+verification is thin is a map for evading it.
+
+**What we think follows, and why — the asymmetry.** We judge the defensive use
+to dominate, and the reason is specific rather than optimistic.
+
+1. **The defensive action is cheap and currently not taken.** Enumeration costs
+   nothing at inference time and is absent from the monitor prompts we have
+   seen. The finding tells deployers to do something they are not doing.
+2. **The offensive use requires control of the monitor's prompt**, and anyone
+   who has that control already has easier and more reliable attacks available
+   than degrading its wording — disabling the monitor, narrowing its inputs,
+   not running it. Prompt vagueness is a worse tool than the tools such an
+   attacker already holds.
+
+**The objection to that argument, which we think is the real risk.** The
+asymmetry assumes the same party controls the monitor and the system it
+watches. Where those come apart it weakens. Two cases:
+
+- **Negligence rather than attack.** A team told to "add a monitor" writes a
+  vague prompt and gets a monitor that always says nothing is wrong. No
+  adversary is required. This is the case our defensive recommendation
+  addresses directly, and it is probably the common one.
+- **Self-configured assurance.** Where a party writes the prompt of the monitor
+  that audits that same party, vague wording is a deniable way to produce clean
+  results. This is a governance problem about **who writes the monitor's
+  prompt**, not a technical one, and we name it because our finding makes it
+  concrete: the gap between a monitor that detects and one that does not can be
+  a sentence of prompt text, invisible in any output the auditor sees.
+
+**A second strand.** The study design is itself a description of how to move a
+false claim through a chain uncaught: carry the claim in the handoff, never
+re-read the artifact, keep the tool return success-shaped. We name it, but it
+is **a description of how ordinary pipelines already fail** rather than a
+technique anyone needs this paper to discover. The novelty here is the
+measurement, not the failure.
+
+**What we are releasing and why.** Pre-registration, code, prompts and traces,
+in full. The defensive recommendation is unusable without the prompts that
+produced the effect, and the result is not checkable without the traces. **We
+do not argue that this work is harmless because it is small.** Six live runs do
+not make a finding safe; they make it uncertain, which is a different thing and
+is addressed in §7 and §8.
+
+### Ethics
+
+- **No human subjects.** No participants, no personal data, no user traffic.
+- **Synthetic records only.** Every record was generated by the runner
+  (`scripts/run_pilot.py`), with random identifiers and values.
+- **No real system or third-party service was the target of the injected
+  failure.** The silent write failure is injected into our own tool, writing to
+  a file in our own run directory.
+- **Model disclosure.** An open-weights model accessed through a hosted API:
+  Groq, `openai/gpt-oss-120b`, temperature 0.0, max output 4096 tokens. The
+  exact string is recorded in every trace's `provider_metadata`. Three earlier
+  runs against `gemini-2.5-flash` are declared in amendment 13 and are not
+  study data.
+- **Tooling.** Implementation was AI-assisted; see the tooling note in §0.
 
 ---
 
 ## Before submitting
 
 - [ ] `<<AUTHOR>>` sections written: §2, §6, abstract.
-- [ ] `<<DUAL_USE>>` written.
 - [ ] No `<<` remains.
 - [ ] Every rate carries its denominator; no zero without a bound.
 - [ ] Amendment count here matches `PREREGISTRATION.md` §13 (fifteen).
