@@ -82,11 +82,9 @@ what to look for mostly does not look** — 1 of 5 opportunities against 5 of 5
 when the same checker, with the same tool and the same evidence, is given a
 prompt naming candidate failure modes.
 
-**We registered a different question and withdrew it.** The pre-registration's
-primary endpoint was the placement comparison Singh and Pawar had already
-answered four and a half months earlier; we found that during the sprint, not
-before it, and amendment 16 records the withdrawal and the sequence. No
-endpoint from the registered design was reached.
+We registered the placement comparison as our primary endpoint, found during
+the sprint that Singh and Pawar had answered it four and a half months earlier,
+and withdrew it; amendment 16 records the withdrawal and the sequence.
 
 ### Why it matters
 
@@ -191,19 +189,14 @@ leaves the file unchanged. The response is built from the call's arguments and
 never read back from disk, so no field, status or error differs between the
 injected and clean modes. A truthfully reports a false belief.
 
-**The handoff carries the content and no agent re-reads the file.** Without
-this the failure dies at step two by the task's own mechanics.
-
-**Crossed 2×2** as registered: injection × scheme (`end_monitor`,
-`per_handoff`). **No cell of that design was run to its registered n** (§5).
-
-**Verifiers flag only.** They never stop the chain and never repair it, so all
-four steps run in every run.
-
-**What the checkers can see.** Every checker gets a read tool on the artifact,
-is never told what the file should contain, and never sees the oracle's
-verdict. Tool access is identical in both schemes and at both prompt levels.
-Nothing instructs a checker to read.
+The handoff carries the content and no agent re-reads the file; without that
+the failure dies at step two by the task's own mechanics. Verifiers flag only,
+never stopping or repairing the chain, so all four steps run every time. Every
+checker gets a read tool on the artifact, is never told what the file should
+contain, never sees the oracle's verdict, and is never instructed to read —
+tool access is identical across both schemes and both prompt levels. The
+registered design was a crossed 2×2, injection × scheme, and **no cell of it
+was run to its registered n** (§4).
 
 **The failure shape, and why it is not a variant of the prior work.** Singh
 and Pawar inject false *content*, which downstream agents then transform — so
@@ -216,19 +209,15 @@ absence propagating. That is why this design reduces to a single question —
 does anything read the artifact — and theirs does not.
 
 **Measurement.** Propagation is one exact containment match of the reference
-code in an agent's asserted fields, scoped to k ∈ {2,3,4}. Detection is a flag
-plus at least one structured claim that the oracle's reading of the file says
-is true. Neither reads free text, so neither has a scorer.
-
-**The pre-registration carries the design in full and is public**, with every
-rule's reasoning and amendment history, so this report states each once and
-points there rather than reproducing it.
-
-**Two deviations from the above, both logged before the runs.** The tool loop
-is scripted runner-side — the runner calls A's tools and reports the results to
-A, so A does not choose to invoke them (amendment 12). The artifact begins as an
-empty JSON object, so `artifact_empty` and `artifact_mismatch` are both true
-under injection and `artifact_missing` is false.
+code in an agent's asserted fields, k ∈ {2,3,4}; detection is a flag plus at
+least one structured claim the oracle's reading of the file says is true.
+Neither reads free text, so neither has a scorer. **Two deviations, both logged
+before the runs:** the tool loop is scripted runner-side, so A receives its
+tool results rather than choosing to invoke them (amendment 12), and the
+artifact begins as an empty JSON object, which makes `artifact_empty` and
+`artifact_mismatch` true under injection and `artifact_missing` false. The
+pre-registration is public and carries every rule with its reasoning and
+amendment history, so this report states each once and points there.
 
 ![Figure 1. The four-stage chain. The dashed amber line is the only write to the file, and under injection it does not happen: the tool returns success and the file stays empty. No agent in the chain re-reads the file, so the handoff message is the record's only carrier. Checkers may read it; nothing compels them to.](figures/chain.svg)
 
@@ -317,12 +306,10 @@ reading a ceiling as a measurement.
 
 ### 4.4 Not computed
 
-The primary endpoint, the survival curve and the between-scheme difference are
-not computed: no cell reached its registered n, pilot runs enter no endpoint by
-design, and the smallest cell is 1 run against the 30 per cell the
-pre-registration requires. The false-positive rate is not computed because no
-`clean` cell was run, and the refusal rate is not computed because the category
-is defined and not instrumented (amendment 12).
+Not computed: the primary endpoint, the survival curve and the between-scheme
+difference (no cell reached its registered n, and pilot runs enter no endpoint
+by design); the false-positive rate (no `clean` cell was run); and the refusal
+rate (the category is defined and not instrumented, amendment 12).
 
 ## 5. Discussion
 
