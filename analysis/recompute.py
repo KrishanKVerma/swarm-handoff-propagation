@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from analysis.adjudicate import adjudicate_bundle, state_for_boundary
-from analysis.stats import Rate, flip_rate, geometric_prediction
+from analysis.stats import Rate, fisher_exact_2x2, flip_rate, geometric_prediction
 
 MIN_N_FOR_COMPARISON = 30
 
@@ -39,9 +39,11 @@ def _repeat_zero(bundle: dict[str, Any], opportunity_id: str) -> dict[str, Any] 
 
 
 def summarise(bundles: list[dict[str, Any]]) -> dict[str, Any]:
-    cells: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    cells: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
     for bundle in bundles:
-        cells[(bundle["condition"], bundle.get("salience", "invisible"))].append(bundle)
+        cells[(bundle["condition"],
+               bundle.get("salience", "invisible"),
+               bundle.get("checker_prompt", "enumerated"))].append(bundle)
 
     out: dict[str, Any] = {
         "runs_total": len(bundles),
@@ -57,7 +59,7 @@ def summarise(bundles: list[dict[str, Any]]) -> dict[str, Any]:
         "notes": [],
     }
 
-    for (condition, salience), group in sorted(cells.items()):
+    for (condition, salience, checker_prompt), group in sorted(cells.items()):
         eligible = [b for b in group if not b.get("excluded")]
         read_k = read_n = 0
         report_k = report_n = 0
@@ -102,7 +104,11 @@ def summarise(bundles: list[dict[str, Any]]) -> dict[str, Any]:
         p = None if p1.point is None or p2.point is None else p1.point * p2.point
         flips = flip_rate(flip_groups)
 
-        out["cells"][f"{condition}|{salience}"] = {
+        out["cells"][f"{condition}|{salience}|{checker_prompt}"] = {
+            "checker_prompt": checker_prompt,
+            "detections_per_opportunity_repeat_zero": {
+                "k": report_k, "n": read_n, "render": Rate(report_k, read_n).render()
+            },
             "runs": len(group),
             "runs_after_exclusions": len(eligible),
             "p1_read_rate_repeat_zero": {"k": p1.k, "n": p1.n, "render": p1.render()},
@@ -119,6 +125,8 @@ def summarise(bundles: list[dict[str, Any]]) -> dict[str, Any]:
             "adjudicated_evaluations": adjudicated_n,
         }
 
+    out["head_to_head_prompt_salience"] = _head_to_head(out["cells"])
+
     smallest = min((c["runs_after_exclusions"] for c in out["cells"].values()), default=0)
     if smallest < MIN_N_FOR_COMPARISON:
         out["notes"].append(
@@ -130,6 +138,34 @@ def summarise(bundles: list[dict[str, Any]]) -> dict[str, Any]:
         "The pilot is an instrument check, not a result (§10). Pilot runs enter no endpoint."
     )
     return out
+
+
+def _head_to_head(cells: dict[str, Any]) -> dict[str, Any] | None:
+    """Amendment 14: enumerated against neutral, on detections per opportunity.
+
+    The reading is fixed in the pre-registration, not chosen here: at five
+    opportunities an arm, only 0 or 1 against 5 resolves anything.
+    """
+    totals: dict[str, list[int]] = {}
+    for cell in cells.values():
+        arm = cell.get("checker_prompt", "enumerated")
+        block = cell["detections_per_opportunity_repeat_zero"]
+        running = totals.setdefault(arm, [0, 0])
+        running[0] += block["k"]
+        running[1] += block["n"]
+    if len(totals) < 2 or "enumerated" not in totals or "neutral" not in totals:
+        return None
+    (ke, ne), (kn, nn) = totals["enumerated"], totals["neutral"]
+    p_value = fisher_exact_2x2(ke, ne - ke, kn, nn - kn)
+    return {
+        "enumerated": Rate(ke, ne).render(),
+        "neutral": Rate(kn, nn).render(),
+        "fisher_exact_two_sided": p_value,
+        "resolved": p_value < 0.05,
+        "note": ("§10, amendment 14: at five opportunities per arm only a "
+                 "near-total difference resolves. Anything unresolved is "
+                 "reported as unresolved, never as no effect."),
+    }
 
 
 def main(argv: list[str] | None = None) -> int:

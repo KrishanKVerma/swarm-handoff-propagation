@@ -86,3 +86,29 @@ def flip_rate(groups: list[list[bool | None]]) -> FlipRate:
     usable = [g for g in groups if len([v for v in g if v is not None]) > 1]
     flipped = sum(1 for g in usable if len({v for v in g if v is not None}) > 1)
     return FlipRate(flipped, len(usable))
+
+
+def fisher_exact_2x2(a: int, b: int, c: int, d: int) -> float:
+    """Two-sided Fisher exact p for [[a, b], [c, d]].
+
+    Sums the probability of every table with the same margins whose
+    probability is no greater than the observed one. Exact, so it is usable at
+    the n this study actually has.
+    """
+    from math import comb
+
+    row1, row2 = a + b, c + d
+    col1 = a + c
+    total = row1 + row2
+    if total == 0 or row1 == 0 or row2 == 0 or col1 == 0 or col1 == total:
+        return 1.0
+
+    def probability(x: int) -> float:
+        return comb(row1, x) * comb(row2, col1 - x) / comb(total, col1)
+
+    observed = probability(a)
+    low = max(0, col1 - row2)
+    high = min(row1, col1)
+    tolerance = observed * (1 + 1e-9)
+    return min(1.0, sum(probability(x) for x in range(low, high + 1)
+                        if probability(x) <= tolerance))

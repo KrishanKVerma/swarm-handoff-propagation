@@ -30,7 +30,16 @@ from typing import Any
 ADJUDICABLE = frozenset(
     {"artifact_missing", "artifact_empty", "artifact_mismatch", "field_mismatch"}
 )
-NOT_ADJUDICATED = frozenset({"other"})
+NOT_ADJUDICATED = frozenset(
+    {"other", "input_mismatch", "transform_error", "self_report_inconsistent"}
+)
+"""Claims the oracle cannot decide.
+
+The oracle reads the file; it has no view on whether a transform was correct or
+whether a stage's account of itself was consistent. The `neutral` prompt
+(amendment 14) offers these so the artifact is not the only answer available.
+A flag carrying one is counted and reported, never scored as a detection and
+never as a false positive."""
 NOT_ADJUDICABLE = frozenset({"uncertain"})
 CLAIM_CLEAR = "no_discrepancy"
 INVALID = "INVALID_OUTPUT"

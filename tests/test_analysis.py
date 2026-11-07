@@ -167,3 +167,27 @@ def test_projection_reports_what_it_measured():
     assert out["end_monitor"]["runs_measured"] == 2
     assert out["pilot_tokens_estimate"] == 55000
     assert out["fits_in_one_day"] is True
+
+
+# --- the head-to-head reading, fixed in advance --------------------------
+
+
+def test_fisher_zero_of_five_against_five_of_five():
+    from analysis.stats import fisher_exact_2x2
+    assert math.isclose(fisher_exact_2x2(5, 0, 0, 5), 2 / 252, rel_tol=1e-9)
+
+
+def test_fisher_one_of_five_is_still_resolvable():
+    from analysis.stats import fisher_exact_2x2
+    assert fisher_exact_2x2(5, 0, 1, 4) < 0.05
+
+
+def test_fisher_two_of_five_is_not_resolvable():
+    """Pre-registered: 2 of 5 or more is reported as unresolved."""
+    from analysis.stats import fisher_exact_2x2
+    assert fisher_exact_2x2(5, 0, 2, 3) > 0.05
+
+
+def test_fisher_identical_arms_is_one():
+    from analysis.stats import fisher_exact_2x2
+    assert math.isclose(fisher_exact_2x2(5, 0, 5, 0), 1.0)
