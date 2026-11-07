@@ -495,21 +495,30 @@ is addressed in §7 and §8.
 
 ## Appendix B — What was fixed in advance
 
-Fifteen amendments, each timestamped, superseded text struck in place and left
-readable. Entries 1–13 precede any study data. Entry 14 follows the first three
-runs and precedes every run after them. Entry 15 records the head-to-head
-result and closes the comparison.
+Every amendment is timestamped, with superseded text struck in place and left
+readable. **`PREREGISTRATION.md` §13 is authoritative for the count and the
+dates**, and this appendix deliberately carries neither: a count maintained in
+two documents goes stale, and in this one it has done so four times.
 
-**Eight of the sixteen correct errors in our own document**, including a
-propagation test two implementations would have scored differently, a rule
-stated twice in two wordings, a false attribution, a prior-work claim about
-code we had not written, and — in entry 15 — a p-value we had computed wrongly
-in entry 14, corrected before it was used.
+They fall in three phases. Most precede any study data. One follows the first
+three live runs and precedes every run after them, recording a confound found
+in our own instrument. One records the head-to-head result and closes that
+comparison against further runs. **The last withdraws the registered primary
+endpoint**, after we found that published work had answered it before this
+pre-registration was written.
 
-Fixed before any run and not changed afterwards: the primary endpoint, the n
-and its power table, the exclusion categories, the scoring rule for
-task-level detections, the canary match rule, the adjudication rule, and what
-a null looks like.
+**Eight correct errors in our own document**, among them a propagation test
+two implementations would have scored differently, a rule stated twice in two
+wordings, a false attribution, a prior-work claim about code we had not
+written, a p-value we had computed wrongly and corrected before it was used,
+and the withdrawal above.
+
+Fixed before any run and not changed afterwards: the n and its power table,
+the exclusion categories, the scoring rule for task-level detections, the
+canary match rule, the adjudication rule, and what a null looks like. **The
+primary endpoint is not on that list** — it was specified before any run and
+then withdrawn as uninformative, and the specification is left standing in the
+pre-registration unaltered.
 
 **One pre-commitment is load-bearing for §5.** After the head-to-head returned
 p = 0.0476, amendment 15 records that **no further runs will be added to that
@@ -524,7 +533,11 @@ stopping, and the refusal is in the log rather than only in our intentions.
       every `DRAFT — rewrite` line removed.
 - [ ] No `<<` remains.
 - [ ] Every rate carries its denominator; no zero without a bound.
-- [ ] Amendment count here matches `PREREGISTRATION.md` §13 (**sixteen**).
+- [ ] **Exactly two places state an amendment count** — the abstract and
+      Methodology — and both match `PREREGISTRATION.md` §13, which is
+      authoritative. Everywhere else points at §13 rather than repeating a
+      number. Four stale counts have already been corrected in this project;
+      if a third location acquires one, delete it rather than updating it.
 - [ ] Every name in §9 did the thing written next to it.
 - [ ] Apart's official template, ≤8 pages excluding references and appendices.
 - [ ] Figure 1 present with its caption.
