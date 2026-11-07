@@ -287,41 +287,45 @@ rate (the category is defined and not instrumented, amendment 12).
 
 ## 5. Discussion and Limitations
 
-**DRAFT — rewrite in the author's voice.**
+Where a verifier sits in a pipeline is settled. Singh and Pawar establish it at
+n = 346: gates at every handoff cut failure survival from 58.4% to 16.2%
+against one check at the end, p < 10⁻⁶. We take that and ask what a gate is
+doing when it works, because placement only decides how often a gate runs. It
+cannot decide whether, on any given run, the gate looks.
 
-Placement is not the whole story of why boundary gates work. Enumerating
-candidate failure modes in the checker's prompt changed whether the checker
-inspected the artifact at all: **5 of 5** opportunities ended in an
-adjudicated detection when the claim set named artifact-level failures, against
-**1 of 5** when the same claims sat among plausible alternatives (two-sided
-Fisher exact **p = 0.0476**, resolved under the reading fixed before the run).
+On five opportunities an arm, what the gate was told moved detection from 1 of
+5 to 5 of 5 — a claim about this instrument at this n, not a general law. With
+candidate failure modes named in its prompt the checker detected the
+discrepancy in 5 of 5 opportunities; with the same model, the same read tool
+and the same transcript, and those options sitting among plausible
+alternatives, 1 of 5, two-sided Fisher exact p = 0.0476, resolved under a
+reading we fixed before running it. The contrast is narrower than
+*enumeration against none*: the neutral arm removed the artifact spotlight
+**and** added three non-artifact options, so what it separates is pointing at
+the artifact from offering alternatives.
 
-The mechanism is in whether the checkers looked, not in what they reported: at
-the neutral level they read the artifact in **0 of 2** opportunities under
-`end_monitor` and **1 of 3** under `per_handoff`, and the one that read,
-reported. They did not pick a wrong category either — **every** neutral
-non-detection was an affirmative `no_discrepancy`, so the checkers concluded
-that nothing was wrong.
+The mechanism is not what the checkers claimed but whether they looked. In the
+neutral condition they opened the artifact in 0 of 2 opportunities under
+`end_monitor` and 1 of 3 under `per_handoff`, and the one that opened it
+reported the mismatch. They did not choose a wrong category either: every
+neutral non-detection was an affirmative `no_discrepancy`. A checker that never
+read the file concluded, and recorded, that nothing was wrong.
 
-The result rests on a single observation — a second neutral detection would
-have made it unresolved by our own pre-registered table — and it licenses no
-claim about either verification scheme, about the independence of detection
-opportunities, or about the rate at which agents propagate unverified claims.
+That has a consequence for how monitors are evaluated, and it is the part we
+expect to outlive our six runs. We constrained the checker to a closed set of
+claims so detection could be adjudicated mechanically, with no human scorer.
+The set lives in the checker's prompt. **The instrument that made our metric
+objective was eliciting the behaviour the metric measured.** Anyone who
+constrains a monitor's output to make it machine-adjudicable is doing the same
+thing to their own measurement, and it is invisible until the instrument runs.
+SLEIGHT-Bench reports the compatible observation from the other direction:
+targeted prompts improve monitor performance on some blind-spot categories, and
+no single prompt covers all of them.
 
-What it does license is narrow and, we think, useful. **A monitor's prompt is
-a parameter of its sensitivity, and an inexpensive one.** The same model, the
-same tool and the same evidence moved from 1 of 5 to 5 of 5 on a change of
-wording, which puts prompt wording in the same class as model choice for anyone
-deploying a monitor, at none of the cost. SLEIGHT-Bench reports the compatible
-result from the other direction: targeted prompts improve monitor performance
-on some blind-spot categories while no single prompt covers all of them.
-
-Their result also raises a question their design can answer and ours cannot:
-**how much of a gate's effectiveness travels with what it is told, rather than
-with where it sits.** A boundary-gate study at their n, run twice with the gate
-prompt enumerated and not, would settle it; six runs cannot. That is the
-experiment we would run next, alongside a third arm giving the output format
-and no options at all, which is the clean version of the test we ran.
+The result rests on one observation. A second neutral detection would have put
+it at p ≈ 0.167, which our own pre-registered table calls unresolved. What it
+supports is narrow and cheap to act on: a monitor's prompt is a parameter of
+its sensitivity, in the same class as model choice and at none of the cost.
 
 ### Limitations
 
@@ -338,13 +342,21 @@ the dual-use and ethics treatment the submission form requires.
 
 ### Future Work
 
-Two experiments follow directly. A third arm giving the checker the output
-format with **no** options at all, which is the clean version of the test we
-ran — ours removed the artifact spotlight but added three alternatives, so it
-shows *pointing at the artifact versus offering alternatives*, not
-*enumeration versus none*. And a boundary-gate study at Singh and Pawar's n,
-run twice with the gate prompt enumerated and not, which would settle how much
-of a gate's effectiveness travels with what it is told.
+Two experiments follow directly, and the design of each is fixed by what this
+one could not resolve.
+
+**A third arm with no options at all.** Our neutral prompt removed the artifact
+spotlight but supplied three alternatives, so it cannot separate enumeration
+from redirection. An arm giving the checker the output format and no candidate
+claims would, at the cost of machine-adjudicable detection — which is the
+trade this study exists to document.
+
+**A boundary-gate study at Singh and Pawar's n, run twice.** Once with the gate
+prompt enumerated, once not. Their design can answer what ours cannot: how much
+of a gate's effectiveness travels with what it is told rather than with where
+it sits. If the enumerated and unenumerated gates differ at their sample size,
+part of the boundary-gate advantage is a prompting effect; if they do not, the
+effect we measured is specific to this failure shape.
 
 ## 6. Conclusion
 
@@ -586,13 +598,17 @@ stopping, and the refusal is in the log rather than only in our intentions.
 
 ## LLM Usage Statement
 
-Implementation was AI-assisted. The research design, the pre-registration and
-the decisions recorded in its amendment log, the analysis and this report are
-the team's, and the team is responsible for everything in it. Every number was
-recomputed from the traces by the command in Code and Data, and every citation
-was checked against its source before use; the verification table is in
-`docs/citation-check.md`. One figure quoted earlier in the project could not be
-verified and was withdrawn rather than softened.
+**This report was AI-drafted and revised by the team.** Sections were drafted
+with LLM assistance against the numbers and then rewritten by the authors; the
+implementation was written the same way. The research design, the
+pre-registration and every decision recorded in its amendment log are the
+team's, and the team is responsible for everything in this report.
+
+Every number here was recomputed from the traces by the command in Code and
+Data; none was transcribed by hand. Every citation was checked against its
+source before use, and the verification table is in `docs/citation-check.md`.
+One figure quoted earlier in the project could not be verified in the paper it
+was attributed to and was withdrawn rather than softened.
 
 ---
 
