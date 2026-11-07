@@ -35,7 +35,7 @@ from typing import Any
 from src.checker_tools import CheckerReadTool
 from src.injection import Mode, Salience, WriteTool, serialise
 from src.oracle import Oracle
-from src.prompts import CHAIN_PROMPTS, CHECKER
+from src.prompts import CHAIN_PROMPTS, CHECKER_PROMPTS
 from src.provider import Provider, ProviderError, RateLimited
 from src.scoring import SchemaAdapter, score_step
 
@@ -64,6 +64,7 @@ class RunConfig:
     salience: Salience = "invisible"
     verifier_repeats: int = 5
     pilot: bool = True
+    checker_prompt: str = "enumerated"   # amendment 14's prompt-salience level
 
     @property
     def condition(self) -> str:
@@ -162,6 +163,7 @@ def run_live(config: RunConfig, output_root: Path, record: dict[str, Any],
         "condition": config.condition,
         "injected": injected,
         "salience": config.salience,
+        "checker_prompt": config.checker_prompt,
         "held_record": record,
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "provider_metadata": provider.metadata(),
@@ -299,6 +301,7 @@ def run_live(config: RunConfig, output_root: Path, record: dict[str, Any],
 def _run_opportunity(bundle: dict[str, Any], config: RunConfig, boundary: str,
                      artifact: Path, provider: Provider) -> None:
     """One checker opportunity and its repeats. Repeat zero is the opportunity."""
+    system_prompt = CHECKER_PROMPTS[config.checker_prompt]
     message = _checker_message(config.scheme, boundary, bundle["steps"])
     opportunity_id = f"{config.run_id}:boundary:{boundary}:{config.scheme}"
     opportunity = {
@@ -328,7 +331,7 @@ def _run_opportunity(bundle: dict[str, Any], config: RunConfig, boundary: str,
         }
         bundle["checks"].append(row)
         try:
-            _evaluate(bundle, row, message, read_tool, provider)
+            _evaluate(bundle, row, message, read_tool, provider, system_prompt)
         except RateLimited:
             row.update(status="rate_limited", error="rate_limited")
             raise
@@ -362,7 +365,8 @@ def _wants_read(text: str) -> bool:
 
 
 def _evaluate(bundle: dict[str, Any], row: dict[str, Any], message: str,
-              read_tool: CheckerReadTool, provider: Provider) -> None:
+              read_tool: CheckerReadTool, provider: Provider,
+              system_prompt: str) -> None:
     """One evaluation, with an optional read turn in the middle.
 
     The checker is offered the tool and nothing tells it to use it. If it asks,
@@ -372,7 +376,7 @@ def _evaluate(bundle: dict[str, Any], row: dict[str, Any], message: str,
     """
     bundle["check_invocations"] += 1
     try:
-        first = provider.generate(system=CHECKER, user=message + TOOL_OFFER)
+        first = provider.generate(system=system_prompt, user=message + TOOL_OFFER)
     except ProviderError as exc:
         row.update(status="api_failure", error=str(exc), error_detail=exc.as_trace())
         return
@@ -393,7 +397,7 @@ def _evaluate(bundle: dict[str, Any], row: dict[str, Any], message: str,
         )
         bundle["check_invocations"] += 1
         try:
-            second = provider.generate(system=CHECKER, user=follow_up)
+            second = provider.generate(system=system_prompt, user=follow_up)
         except ProviderError as exc:
             row.update(status="api_failure", error=str(exc), error_detail=exc.as_trace())
             return
