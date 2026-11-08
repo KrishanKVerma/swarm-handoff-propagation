@@ -29,12 +29,13 @@ What that claim is not:
 - The contrast is **narrower than enumeration against none**: the neutral arm
   removed the artifact spotlight and added three non-artifact options, so what
   it separates is pointing at the artifact from offering alternatives.
-- Three of the six live runs record no checker-prompt identifier in their
-  traces. The analysis assigns them to the enumerated arm by the live runner's
-  own default (`src/live_runner.py:67`, read back at `analysis/recompute.py:46`
-  and `:151`); the three neutral runs carry their label explicitly. The
-  enumerated side of the contrast is identified by what the writer defaulted to
-  rather than by anything recorded in the trace. §3 of `REPORT.md` states this.
+- Three of the six saved `live-0.2` traces record no `checker_prompt`
+  identifier. The analysis assigns them to the enumerated arm by the live
+  runner's own default (`src/live_runner.py:67`, read as that default at
+  `analysis/recompute.py:46` and `:151`); the three neutral runs carry theirs
+  explicitly. The enumerated side of the contrast is identified by what the
+  writer defaulted to rather than by anything recorded in the trace.
+  `REPORT.md` §3 states this.
 
 The report is [`REPORT.md`](REPORT.md). Every number in it is reproduced from a
 clean clone by:
@@ -68,7 +69,7 @@ later stages unexecuted; the trace retains all four step records.
 |---|---|
 | Krishan Kumar Verma | measurement design, pre-registration and amendments, injection, oracle, canary scorer, checker tools, agent and checker prompts, live runner, analysis, report |
 | Soumyajit Karmakar | related work; LA-hub presentation |
-| Ahmed Tariq | the trace format and the offline runner, begun 5 November and declared preexisting where applicable (see Prior work), and during the sprint the Amendment 7 checker-access and flag-isolation implementation and the Amendment 8 containment matcher, merged to `main` on 7 November |
+| Ahmed Tariq | the trace format and the offline runner, begun 5 November and declared preexisting where applicable (see Prior work), and during the sprint the amendment 7 checker-access and flag-isolation implementation and the amendment 8 containment matcher, merged to `main` on 7 November |
 
 Ahmed Tariq also raised the flag-only rule (amendment 3), the checker-evidence
 question and flag isolation (amendment 7), and both p₁ definitions
@@ -83,10 +84,11 @@ they are on the team.
 - **Supriya Kamatagi** — the runner's propagation scoring enum,
   `PROPAGATED` / `NOT_PROPAGATED` / `MISSING_CANARY` / `INVALID_OUTPUT`
   (amendment 7).
-- **Nico Smith** — the geometric framing and the independence question in §7
-  (amendment 7).
+- **Nico Smith** — the geometric framing and the independence question
+  (`PREREGISTRATION.md` §7, amendment 7).
 - **Dora Zelenyanszki** — the p₁ / p₂ decomposition: splitting per-opportunity
-  detection into a read rate and reporting given a read (§7).
+  detection into a read rate and reporting given a read
+  (`PREREGISTRATION.md` §7).
 
 Nobody has been removed as a repository collaborator.
 
