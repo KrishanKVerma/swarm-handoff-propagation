@@ -175,7 +175,12 @@ def _audit(run_dir: Path) -> dict[str, Any]:
              "condition/injection mismatch")
     scheme = condition[len(prefix):]
     _require(trace.get("salience") in {"invisible", "weak_cue"}, "unsupported salience")
-    _require(isinstance(trace.get("checker_prompt"), str), "missing checker prompt identifier")
+    # Early live-0.2 exports predate this identifier and used the enumerated
+    # checker. Match analysis.recompute's historical default without adding a
+    # field to the returned trace or rewriting the saved evidence. An explicit
+    # null/non-string value remains invalid.
+    _require(isinstance(trace.get("checker_prompt", "enumerated"), str),
+             "invalid checker prompt identifier")
     _require(isinstance(trace.get("provider_metadata"), dict), "missing provider metadata")
     _require(_natural(trace.get("verifier_repeats")) and trace["verifier_repeats"] > 0,
              "positive verifier repeat count required")

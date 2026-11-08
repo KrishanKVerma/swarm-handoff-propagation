@@ -64,6 +64,11 @@ excluding keys and type coercion. Saved fixture policies record their own rule;
 C's structured `pass` route remains independent of token carriage.
 
 Live summaries preserve recorded eligibility, pilot flags and exclusions. They
+accept early `live-0.2` traces without a `checker_prompt` identifier, following
+the shared analysis's historical `enumerated` default. Explicit `neutral` values
+remain separate; explicit null or non-string identifiers remain invalid. Replay
+does not insert the inferred field into returned traces or saved files.
+Summaries
 separate recorded invocation/token counts from the replay's zero provider
 calls, keep repeat-zero opportunities distinct from repeated evaluations, and
 recompute checker adjudications using the shared analysis. `shared_analysis`
@@ -76,10 +81,10 @@ are reported explicitly instead of inventing a scientific classification.
 ## Evidence limits
 
 The compatibility probe establishes that current live-writer output can be
-read, validated and replayed. The empirical pilot folders are not tracked in
-this repository and were not available for that probe. A claim that the actual
-pilot was reproduced requires running the commands on those original folders
-and retaining the result.
+read, validated and replayed using scripted responses. The six saved Groq pilot
+folders are now tracked in `runs/smoke`; the saved-pilot regression audits all
+six, compares their replay summary with `analysis.recompute`, and checks every
+input file's hash before and after. Neither operation makes provider calls.
 
 Live files have no signed or hashed manifest, so the audit establishes internal
 consistency, not authenticated provenance or proof that model calls occurred.

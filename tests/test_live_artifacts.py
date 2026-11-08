@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from pathlib import Path
 
 import pytest
 
@@ -101,6 +102,49 @@ def test_containment_propagation_and_c_contract_limit_are_preserved(tmp_path):
 def test_weak_cue_is_a_valid_live_writer_variant(tmp_path):
     run_dir, bundle, _ = _run(tmp_path, salience="weak_cue")
     assert audit_live_bundle(run_dir) == bundle
+
+
+@pytest.mark.parametrize("scheme", ["end_monitor", "per_handoff"])
+def test_historical_absent_prompt_identifier_preserves_bytes_and_analysis(tmp_path, scheme):
+    run_dir, bundle, _ = _run(tmp_path, scheme=scheme)
+    del bundle["checker_prompt"]
+    _write_trace(run_dir, bundle)
+    before = _hashes(run_dir)
+    assert audit_live_bundle(run_dir) == bundle
+    assert "checker_prompt" not in audit_live_bundle(run_dir)
+    summary = summarize_live(run_dir)
+    assert summary["shared_analysis"] == summarise([bundle])
+    assert all(name.endswith("|enumerated") for name in summary["shared_analysis"]["cells"])
+    assert _hashes(run_dir) == before
+
+
+@pytest.mark.parametrize("invalid", [None, False, 0, [], {}])
+def test_explicit_invalid_prompt_identifier_is_not_a_historical_default(tmp_path, invalid):
+    run_dir, bundle, _ = _run(tmp_path)
+    bundle["checker_prompt"] = invalid
+    _write_trace(run_dir, bundle)
+    with pytest.raises(LiveBundleError, match="invalid checker prompt identifier"):
+        audit_live_bundle(run_dir)
+
+
+def test_saved_groq_pilot_replays_without_network_or_evidence_changes(monkeypatch):
+    def no_network(*args, **kwargs):
+        raise AssertionError("Saved-pilot replay must not make provider calls")
+    monkeypatch.setattr("urllib.request.urlopen", no_network)
+    runs = Path(__file__).resolve().parents[1] / "runs" / "smoke"
+    paths = sorted(runs.glob("*/trace.json"))
+    assert len(paths) == 6
+    before = _hashes(runs)
+    bundles = [audit_live_bundle(path.parent) for path in paths]
+    assert sum("checker_prompt" not in bundle for bundle in bundles) == 3
+    assert sum(bundle.get("checker_prompt") == "neutral" for bundle in bundles) == 3
+    assert all(bundle["provider_metadata"]["provider"] == "groq"
+               and bundle["provider_metadata"]["model"] == "openai/gpt-oss-120b"
+               for bundle in bundles)
+    summary = summarize_live(runs)
+    assert summary["shared_analysis"] == summarise(bundles)
+    assert summary["replay_provider_api_calls"] == 0
+    assert _hashes(runs) == before
 
 
 @pytest.mark.parametrize("failure", ["malformed", "api", "truncated", "rate_limit"])
