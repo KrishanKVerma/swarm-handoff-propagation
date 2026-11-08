@@ -187,6 +187,16 @@ runner-side, so A receives its tool results rather than choosing to invoke them
 with its reasoning and amendment history; this report states each once and
 points there.
 
+**What identifies the enumerated arm.** Three of the six saved `live-0.2`
+traces — both end-monitor runs and the per-handoff run that together are the
+enumerated arm, the full 5 of 5 — record no `checker_prompt` identifier; the
+three neutral runs carry theirs explicitly. The analysis assigns the three
+unlabelled runs to the enumerated arm by the live runner's own default
+(`src/live_runner.py:67`, read as that default at `analysis/recompute.py:46`
+and `:151`). The enumerated side of the headline contrast is therefore
+identified by what the writer defaulted to rather than by anything recorded in
+the trace.
+
 ![Figure 1. The four-stage chain. The dashed amber line is the only write to the file, and under injection it does not happen: the tool returns success and the file stays empty. No agent in the chain re-reads the file, so the handoff message is the record's only carrier. Checkers may read it; nothing compels them to.](figures/figure1-chain.png)
 
 ### What was fixed in advance
