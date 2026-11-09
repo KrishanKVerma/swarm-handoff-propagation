@@ -6,6 +6,8 @@ Krishan Kumar Verma, Independent
 
 Soumyajit Karmakar, Independent
 
+Ahmed Tariq, Independent
+
 With Apart Research
 
 ## Abstract
@@ -101,7 +103,7 @@ commits and timestamps — is in `PREREGISTRATION.md` §0.
 
 ## 2. Related Work
 
-Drafted by Soumyajit Karmakar; every citation checked against the source
+Every citation was checked against the source
 (`docs/citation-check.md`). Error propagation in multi-agent LLM systems has mostly been studied with
 content errors. Huang et al. (2025) inject mistakes into agents' responses and
 find a hierarchical structure most resilient (5.5% performance drop against
@@ -399,10 +401,13 @@ Ahmed Tariq: the trace format and the offline runner, begun 5 November and
 declared preexisting where applicable (§0), and during the sprint the
 amendment 7 checker-access and flag-isolation implementation and the
 amendment 8 containment matcher; he also raised the flag-only rule, the
-checker-evidence question and both p₁ definitions. Contributed before the
-project split and not on this submission: Supriya Kamatagi (the propagation
-scoring enum), Nico Smith (the geometric framing and the independence
-question), Dora Zelenyanszki (the p₁ / p₂ decomposition).
+checker-evidence question and both p₁ definitions.
+
+## Acknowledgements
+The authors would like to thank Supriya Kamatagi for the propagation
+scoring enum, Nico Smith for the geometric framing and the independence
+question, and Dora Zelenyanszki for the discussion on the p₁ / p₂ decomposition idea.
+
 
 ## References
 
