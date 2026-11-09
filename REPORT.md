@@ -406,7 +406,8 @@ checker-evidence question and both p₁ definitions.
 ## Acknowledgements
 The authors would like to thank Supriya Kamatagi for the propagation
 scoring enum, Nico Smith for the geometric framing and the independence
-question, and Dora Zelenyanszki for the discussion on the p₁ / p₂ decomposition idea.
+question, and Dora Zelenyanszki for the p₁ / p₂ decomposition. None of them is
+on this submission; their contributions predate the project split.
 
 
 ## References
