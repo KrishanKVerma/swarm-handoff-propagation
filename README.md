@@ -9,7 +9,13 @@ fails, truthfully reports its own false belief, and hands on a wrong
 state — and measure how far that false state travels before anything
 catches it.
 
-Apart Research Swarm Alignment Hackathon, 6–8 November 2026.
+Apart Research Swarm Alignment Hackathon, 6–8 November 2026
+
+## Video
+
+https://github.com/user-attachments/assets/2910b73f-5f23-4dae-88b3-ce55518ab2b8
+
+Three minutes: the failure, the measurement, and what the head-to-head showed.
 
 ## What we found
 
